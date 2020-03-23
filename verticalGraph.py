@@ -41,7 +41,6 @@ with open(PATH + "data.json") as f:
     # for i in range(1, 30):
     dates = set([_["date"] for _ in data])
     dates = sorted(dates)
-    print(dates[-1])
     o = {}
 
     for row in data:

@@ -165,10 +165,7 @@ export default {
                     ctx.yGroupMax = d3.max(ctx.layers, layer =>
                         d3.max(layer, d => d[1] - d[0])
                     )
-                    // ctx.x = d3
-                    //     .scaleTime()
-                    //     .range([0, ctx.width])
-                    //     .domain(this.dates.map(d => new Date(d)))
+
                     ctx.x = d3
                         .scaleBand()
                         .domain(d3.range(ctx.m))

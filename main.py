@@ -10,7 +10,6 @@ from datetime import datetime, date, timedelta
 LANGS = ["fr", "es", "en", "de"]
 
 
-
 def readCsv(name, mapping, myKey="code"):
     the_reader = DictReader(open(name, 'r', encoding="utf8"))
     output = [{key: _[value] for key, value in mapping.items()}
@@ -219,7 +218,6 @@ def scanDailyFolder():
                         "count", 0) + 1
                     newMap[filename][code] = {**newMap[filename][code], **o}
     output = []
-    print(newMap)
     for date, value in newMap.items():
         date = date.replace(".json", "")
         date = datetime.strptime(date, '%m-%d-%Y').strftime('%Y-%m-%d')
@@ -231,8 +229,6 @@ def scanDailyFolder():
         v["lat"] = v["lat"] / v["count"]
         v["lng"] = v["lng"] / v["count"]
         del v["count"]
-    print(lat_lngs)
-
     output2 = []
     for val in output:
         val = {**val, **lat_lngs[val["country_code"]],
@@ -242,17 +238,15 @@ def scanDailyFolder():
         val = {k: v for k, v in val.items() if k not in [
             "latitude", "longitude", "country_code"]}
         output2.append(val)
-    print(len(output))
+
     output = sorted(output2, key=lambda x: x["date"])
 
     with open("./covid19/public/data.json", "w") as f:
         f.write(json.dumps(output))
     with open("./covid19/public/countries.json", "w") as f:
         f.write(json.dumps(mapCountryCode))
-    # print(f)
-    # print(c)
 
 
 if __name__ == "__main__":
     getDates()
-    # scanDailyFolder()
+    scanDailyFolder()
