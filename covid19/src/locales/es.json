@@ -1,0 +1,16 @@
+{
+    "es": "Espanol",
+    "confirmed": "Casos confirmados",
+    "deaths": "Muertos",
+    "recovered": "Recuperados",
+    "confirmed_deaths_recovered": "Aun infectados",
+    "choose": "Elejir",
+    "measure": "Medida",
+    "lang": "idioma",
+    "graph_type": "le tipo de grafico",
+    "stacked": "Total",
+    "percent": "Ratio",
+    "top": "Top",
+    "countries": "paises",
+    "vertical_desc": "Este grafico muestra el [z] de [x] por [y] dia por dia"
+}

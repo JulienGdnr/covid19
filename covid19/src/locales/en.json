@@ -1,0 +1,16 @@
+{
+    "en": "English",
+    "confirmed": "Confirmed cases",
+    "deaths": "Deaths",
+    "recovered": "Recovered",
+    "confirmed_deaths_recovered": "Still infected",
+    "choose": "Choose",
+    "measure": "Measure",
+    "lang": "Lang",
+    "graph_type": "graph type",
+    "stacked": "Total",
+    "percent": "Ratio",
+    "top": "Top",
+    "countries": "countries",
+    "vertical_desc": "This graph displays the [z] of [x] by [y], for each day"
+}

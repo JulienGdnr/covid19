@@ -1,0 +1,16 @@
+{
+    "fr": "Français",
+    "confirmed": "Cas confirmés",
+    "deaths": "Décès",
+    "recovered": "Guéris",
+    "confirmed_deaths_recovered": "Encore infectés",
+    "choose": "Choisir",
+    "measure": "Métrique",
+    "lang": "Langue",
+    "graph_type": "le type de graphe",
+    "stacked": "Total",
+    "percent": "Ratio",
+    "top": "Top",
+    "countries": "pays",
+    "vertical_desc": "Ce graphe montre le [z] de [x] par [y] jour après jour"
+}
