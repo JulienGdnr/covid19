@@ -19,6 +19,7 @@
     "stacked": "Stacked",
     "percent": "Percent of total",
     "race": "Time race",
+    "refresh": "Refresh",
     "top": "Top",
     "countries": "countries",
     "vertical_desc": "This graph displays the [z] of [x] by [y], for each day"

@@ -106,7 +106,7 @@
 import BarChart from '@/components/BarChart'
 import RaceChart from '@/components/RaceChart'
 let items = []
-for (let i = 1; i < 20; i++) {
+for (let i = 1; i <= 20; i++) {
     items.push(i)
 }
 export default {
@@ -119,7 +119,7 @@ export default {
         top: 10,
         choice: 'stacked',
         choices: ['stacked', 'percent'],
-        measure: 'deaths',
+        measure: 'confirmed_deaths_recovered',
         lang: 'en',
         items,
         window: 0,
