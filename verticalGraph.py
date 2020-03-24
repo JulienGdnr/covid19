@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-import time
+
 all_measures = ["deaths", "recovered",
                 "confirmed", "confirmed_deaths_recovered"]
 

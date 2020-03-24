@@ -147,7 +147,7 @@ def scanDailyFolder():
         "UK": "United Kingdom",
         "Korea, South": "South Korea",
         "Republic of Ireland": "Ireland",
-        "Republic of Korea": "North Korea",
+        "Republic of Korea": "South Korea",
         "Russian Federation": "Russia",
         "Viet Nam": "Vietnam",
         "Taiwan*": "Taiwan",
