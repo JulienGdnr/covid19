@@ -7,7 +7,11 @@
             color="primary"
             v-if="loading"
         ></v-progress-circular>
-        <div id="container" style="background:#e9e9e9;border-radius:10px"></div>
+        <div
+            id="container"
+            style="background:#e9e9e9;border-radius:10px"
+            v-if="data.length > 0"
+        ></div>
         <v-spacer></v-spacer>
     </v-row>
 </template>
@@ -135,6 +139,7 @@ export default {
         },
         mount() {
             this.w = Math.min(window.innerWidth, 1000)
+            this.h = Math.min(0.5 * this.w, this.h)
             if (this.svg) d3.selectAll('svg').remove()
             clearTimeout(this.tmt)
             this.tmt = setTimeout(
@@ -431,20 +436,13 @@ export default {
     computed: {
         margin() {
             return {
-                top: 40,
+                top: this.breakpoint == 'xs' ? 10 : 40,
                 right: this.lang == 'es' ? 160 : 110,
                 bottom: 40,
                 left: 35,
             }
         },
-        backgroundColor() {
-            return {
-                recovered: '#d2f8d2',
-                confirmed: '#add8e6',
-                deaths: '#ff9994',
-                confirmed_deaths_recovered: '#ffcf94',
-            }[this.measure]
-        },
+
         colorArray() {
             return this.countries.map((c, i) => {
                 if (this.has_color[c]) {
