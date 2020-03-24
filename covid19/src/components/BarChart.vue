@@ -7,11 +7,7 @@
             color="primary"
             v-if="loading"
         ></v-progress-circular>
-        <!-- {{ color }} -->
-        <div
-            id="container"
-            :style="`background:#e9e9e9;border-radius:10px`"
-        ></div>
+        <div id="container" style="background:#e9e9e9;border-radius:10px"></div>
         <v-spacer></v-spacer>
     </v-row>
 </template>
@@ -56,7 +52,6 @@ export default {
         dimension: 'country',
         h: 500,
         w: 800,
-
         x: null,
         y: null,
         svg: null,
@@ -78,9 +73,7 @@ export default {
         rawData: { data: [], dates: [] },
         countryMap: countries,
         continentMap: continents,
-
         items,
-
         i18n: {
             others: {
                 fr: 'Autres',
@@ -501,15 +494,10 @@ export default {
         data() {
             let output = []
             let l = this.rawData.data.length
-            // output.push(this.rawData.data[l - 1].values)
 
             for (let i = l - 1; i >= 0; i--) {
                 output.push(this.rawData.data[i].values)
             }
-
-            // for (let row of this.rawData.data) {
-            //     output.push(row.values)
-            // }
 
             output = output[0].map(function(col, i) {
                 return output.map(function(row) {

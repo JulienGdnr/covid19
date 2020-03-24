@@ -123,7 +123,7 @@ def retrieveRawData():
 
 def getDates():
     edate = date.today()
-    sdate = date(2020, 3, 19)
+    sdate = date(2020, 3, 10)
     delta = edate - sdate
 
     for i in range(delta.days + 1):
@@ -226,8 +226,12 @@ def scanDailyFolder():
                            "country_en": mapCountryCode[country_code]["country_en"]})
 
     for k, v in lat_lngs.items():
-        v["lat"] = v["lat"] / v["count"]
-        v["lng"] = v["lng"] / v["count"]
+        print(k, v)
+        try:
+            v["lat"] = v["lat"] / v["count"]
+            v["lng"] = v["lng"] / v["count"]
+        except:
+            pass
         del v["count"]
     output2 = []
     for val in output:
@@ -248,5 +252,5 @@ def scanDailyFolder():
 
 
 if __name__ == "__main__":
-    getDates()
+    # getDates()
     scanDailyFolder()
