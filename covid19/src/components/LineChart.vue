@@ -206,6 +206,13 @@ export default {
         },
     },
     methods: {
+        formatDate(d) {
+            return this.lang == 'en'
+                ? format(new Date(d), 'd MMM')
+                : format(new Date(d), 'd MMM', {
+                      locale: locales[this.lang],
+                  })
+        },
         getData() {
             if (!this.getting) {
                 if (!this.stopped) {
@@ -306,7 +313,6 @@ export default {
             ctx.svg
                 .selectAll('path')
                 .on('mouseover', d => {
-                    console.log(d[0], d[d.length - 1])
                     const start = d[0]
                     const end = d[d.length - 1]
                     // s += arr.reverse().join('')
@@ -317,12 +323,11 @@ export default {
                         ctx.countryNames[start.code]
                     }</b></div><br><span>${ctx.$t(
                         'started'
-                    )}</span> : <b>${format(
-                        new Date(start.date),
-                        'd MMMM'
+                    )}</span> : <b>${ctx.formatDate(
+                        start.date
                     )}</b><br><span>${ctx.$t(ctx.measure)} ${ctx.$t(
                         'on'
-                    )} ${format(new Date(end.date), 'd MMMM')}</span> : <b>${
+                    )} ${ctx.formatDate(end.date)}</span> : <b>${
                         end.value
                     } </b></div>`
                     ctx.div
