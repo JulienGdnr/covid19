@@ -22,5 +22,10 @@
     "race": "Trayectoria",
     "top": "Top",
     "countries": "Paises",
-    "vertical_desc": "Este gráfico muestra el [z] de [x] por [y] día por día"
+    "vertical_desc": "Este gráfico muestra el [z] de [x] por [y] día por día",
+    "started": "excedió 10 muertos el",
+    "on": "el",
+    "day": "Día",
+    "volunteer": "En apoyo de todos los voluntarios del planeta.",
+    "line_sentence": "Este gráfico es la evolución de los [x] para cada país llevado a la fecha en que el país vio su <b>décima muerte</b>"
 }

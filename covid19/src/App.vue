@@ -7,12 +7,15 @@
                 </v-btn>
                 <v-item-group v-model="window" class="text-center" mandatory>
                     <v-item
-                        v-for="n in 2"
-                        :key="`btn-${n}`"
+                        v-for="(n, i) in windows"
+                        :key="`btn-${i}`"
                         v-slot:default="{ active, toggle }"
                     >
                         <v-btn :input-value="active" icon @click="toggle">
-                            <v-icon>mdi-record</v-icon>
+                            <v-icon
+                                :style="i == 1 ? 'transform:rotate(90deg)' : ''"
+                                >{{ n }}</v-icon
+                            >
                         </v-btn>
                     </v-item>
                 </v-item-group>
@@ -53,6 +56,18 @@
                     ></v-select>
                 </v-col>
                 <v-col
+                    v-if="window == 2 && false"
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                >
+                    <v-switch
+                        inset
+                        dense
+                        :label="'Log'"
+                        type="number"
+                        v-model="log"
+                    ></v-switch>
+                </v-col>
+                <v-col
                     :cols="breakpoint == 'xs' ? '' : '2'"
                     v-if="mode == 'bar'"
                 >
@@ -70,12 +85,12 @@
                     </v-radio-group>
                 </v-col>
             </v-row>
-            <v-row justify="center" v-if="mode == 'bar'"
-                ><v-subheader
+            <v-row justify="center" v-if="mode == 'bar'">
+                <v-subheader
                     :class="breakpoint == 'xs' ? 'pa-0 ma-0' : 'title'"
                     v-html="vertical_description"
-                ></v-subheader
-            ></v-row>
+                ></v-subheader>
+            </v-row>
             <bar-chart
                 :top="top"
                 :lang="lang"
@@ -92,13 +107,19 @@
                 :measure="measure"
                 v-if="window == 1 && !moving"
             />
+            <line-chart
+                :top="top"
+                :lang="lang"
+                :measures="measures"
+                :measure="measure"
+                :log="log"
+                v-if="window == 2 && !moving"
+            />
         </v-col>
         <v-footer dark padless>
             <v-card light class="flex" flat tile>
                 <v-card-title class="blue-grey lighten-5">
-                    <strong class="subheading"
-                        >In support of all the volunteers on the planet</strong
-                    >
+                    <strong class="subheading">{{ $t('volunteer') }}</strong>
 
                     <v-spacer></v-spacer>
 
@@ -118,15 +139,15 @@
 
                 <v-card-text dark class="py-2 white--text text-center black">
                     {{ new Date().getFullYear() }} —
-                    <strong
-                        >Designed with ❤️ by
+                    <strong>
+                        Designed with ❤️ by
                         <a
                             target="_blank"
                             href="https://github.com/JulienGdnr/covid19"
                             >@julien godenir</a
                         >
-                        to help raise awareness on covid19</strong
-                    >
+                        to help raise awareness on covid19
+                    </strong>
                 </v-card-text>
             </v-card>
         </v-footer>
@@ -136,6 +157,7 @@
 <script>
 import BarChart from '@/components/BarChart'
 import RaceChart from '@/components/RaceChart'
+import LineChart from '@/components/LineChart'
 let items = []
 for (let i = 1; i <= 20; i++) {
     items.push(i)
@@ -145,6 +167,7 @@ export default {
     components: {
         BarChart,
         RaceChart,
+        LineChart,
     },
     data: () => ({
         top: 10,
@@ -154,6 +177,8 @@ export default {
         lang: 'en',
         items,
         window: 0,
+        windows: ['bar_chart', 'bar_chart', 'multiline_chart'],
+        log: false,
         moving: false,
         icons: [
             {
@@ -230,7 +255,7 @@ export default {
             }, {})
         },
         langs() {
-            return ['en', 'fr', 'es'].map(value => ({
+            return ['en', 'fr', 'es', 'de'].map(value => ({
                 value,
                 text: this.$t(value, value),
             }))
@@ -239,13 +264,13 @@ export default {
     methods: {
         prev() {
             if (this.window == 0) {
-                this.window = 1
+                this.window = this.windows.length - 1
             } else {
                 this.window--
             }
         },
         next() {
-            if (this.window == 1) {
+            if (this.window == this.windows.length - 1) {
                 this.window = 0
             } else {
                 this.window++
@@ -278,9 +303,60 @@ export default {
                     500,
                     this
                 )
+            } else if (val == 2) {
+                this.measure = 'deaths'
             }
         },
     },
 }
 </script>
-<style></style>
+<style>
+text {
+    font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: auto;
+    height: auto;
+    padding: 10px;
+    margin: 2px;
+    white-space: nowrap;
+    color: #000;
+    font: 13px sans-serif;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1),
+        0 5px 15px rgba(0, 0, 0, 0.07);
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    opacity: 1;
+    z-index: 1000;
+}
+.legendOrdinal path {
+    fill: white;
+    stroke: black;
+    opacity: 0.8;
+}
+rect {
+    opacity: 0.7;
+    cursor: pointer;
+}
+#test_0_0 > rect:hover {
+    background: red;
+}
+rect:hover {
+    opacity: 1;
+}
+</style>

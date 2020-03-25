@@ -1,8 +1,17 @@
 <template>
     <v-row align="center" justify="center">
         <v-spacer></v-spacer>
-        <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
-        <div id="container" style="background:#e9e9e9;border-radius:10px" v-if="data.length > 0"></div>
+        <v-progress-circular
+            indeterminate
+            size="50"
+            color="primary"
+            v-if="loading"
+        ></v-progress-circular>
+        <div
+            id="container"
+            style="background:#e9e9e9;border-radius:10px"
+            v-if="data.length > 0"
+        ></div>
         <v-spacer></v-spacer>
     </v-row>
 </template>
@@ -11,8 +20,8 @@
 import countries from '@/../public/countries.json'
 import continents from '@/../public/continents.json'
 import * as d3 from 'd3'
-import * as d3Scale from 'd3-scale-chromatic'
-import * as d3Legend from 'd3-svg-legend'
+import { schemeCategory10 } from 'd3-scale-chromatic'
+import { legendColor } from 'd3-svg-legend'
 import { format } from 'date-fns'
 import { de, fr, es } from 'date-fns/locale'
 const locales = { de, fr, es }
@@ -326,8 +335,7 @@ export default {
                                 ) +
                                 ',20)'
                         )
-                    var legendOrdinal = d3Legend
-                        .legendColor()
+                    var legendOrdinal = legendColor()
                         .shape(
                             'path',
                             d3
@@ -441,7 +449,7 @@ export default {
                     return this.has_color[c]
                 }
                 let idx = Math.floor(i % 10)
-                return d3Scale.schemeCategory10[idx]
+                return schemeCategory10[idx]
             })
         },
         tickBreak() {
@@ -538,53 +546,4 @@ export default {
 }
 </script>
 
-<style>
-text {
-    font: 10px sans-serif;
-}
-
-.axis path,
-.axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-}
-
-div.tooltip {
-    position: absolute;
-    text-align: center;
-    width: auto;
-    height: auto;
-    padding: 10px;
-    margin: 2px;
-    white-space: nowrap;
-    color: #000;
-    font: 13px sans-serif;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1),
-        0 5px 15px rgba(0, 0, 0, 0.07);
-    pointer-events: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    opacity: 1;
-    z-index: 1000;
-}
-.legendOrdinal path {
-    fill: white;
-    stroke: black;
-    opacity: 0.8;
-}
-rect {
-    opacity: 0.7;
-    cursor: pointer;
-}
-#test_0_0 > rect:hover {
-    background: red;
-}
-rect:hover {
-    opacity: 1;
-}
-</style>
+<style></style>

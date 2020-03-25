@@ -14,7 +14,7 @@ export default {
         },
     }),
     computed: {
-        backgroundColor() {
+        textColor() {
             return {
                 confirmed_deaths_recovered: 'orange',
                 confirmed: 'blue',

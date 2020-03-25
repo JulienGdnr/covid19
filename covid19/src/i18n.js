@@ -5,7 +5,7 @@ Vue.use(VueI18n)
 
 let locale = navigator.language.split('-')[0]
 if (locale) {
-    locale = ['es', 'en', 'fr'].indexOf(locale) === -1 ? 'en' : locale
+    locale = ['es', 'en', 'fr', 'de'].indexOf(locale) === -1 ? 'en' : locale
 } else {
     locale = 'en'
 }

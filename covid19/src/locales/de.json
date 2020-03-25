@@ -1,5 +1,5 @@
 {
-    "en": "Deutsch",
+    "de": "Deutsch",
     "confirmed": "Bestätigte Fälle",
     "deaths": "Todesfälle",
     "recovered": "Genesungen",
@@ -22,5 +22,10 @@
     "refresh": "Aktualisieren",
     "top": "Top",
     "countries": "Länder",
-    "vertical_desc": "Diese Grafik stellt die [z] von [x] anhand verschiedener [y] dar."
+    "vertical_desc": "Diese Grafik stellt die [z] von [x] anhand verschiedener [y] dar.",
+    "started": "10 Tote überschritten",
+    "on": "",
+    "day": "Tag",
+    "volunteer": "Zur Unterstützung aller Freiwilligen auf dem Planeten",
+    "line_sentence": "Diese Grafik zeigt die Entwicklung von [x] für jedes Land, das auf das Datum zurückgeführt wurde, an dem das Land seinen <b>10. Tod</b> erlebte"
 }

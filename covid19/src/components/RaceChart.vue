@@ -1,6 +1,6 @@
 <template>
     <v-col>
-        <v-row align="center" justify="center">
+        <v-row align="center" justify="center" class="mb-3">
             <div class="title" v-html="sentence"></div>
             <v-btn
                 v-if="i == dates.length - 1"
@@ -15,7 +15,12 @@
         </v-row>
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
-            <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
+            <v-progress-circular
+                indeterminate
+                size="50"
+                color="primary"
+                v-if="loading"
+            ></v-progress-circular>
             <div
                 id="containerRaceChart"
                 :style="
@@ -30,8 +35,8 @@
 <script>
 import countries from '@/../public/countries.json'
 import * as d3 from 'd3'
-import * as d3Scale from 'd3-scale-chromatic'
-import * as d3Ease from 'd3-ease'
+import { schemeCategory10 } from 'd3-scale-chromatic'
+import { easeLinear } from 'd3-ease'
 import { format } from 'date-fns'
 import { de, fr, es } from 'date-fns/locale'
 const locales = { de, fr, es }
@@ -84,10 +89,8 @@ export default {
     computed: {
         sentence() {
             return `${this.$t('top')} ${this.top} <span style="color:${
-                this.backgroundColor
-            }">${this.$t(this.measure, this.lang).toLowerCase()}</span> ${
-                this.nice_date
-            }`
+                this.textColor
+            }">${this.$t(this.measure).toLowerCase()}</span> ${this.nice_date}`
         },
         nice_date() {
             return this.lang == 'en'
@@ -148,7 +151,7 @@ export default {
         countryColor() {
             return this.arrayCodes
                 .map((code, i) => {
-                    return { code, color: d3Scale.schemeCategory10[i % 10] }
+                    return { code, color: schemeCategory10[i % 10] }
                 })
                 .reduce((p, c) => {
                     p[c.code] = c.color
@@ -238,8 +241,8 @@ export default {
             }
         },
         mount() {
-            // this.width = Math.min(window.innerWidth, 1000)
-            // this.height = Math.min(this.width, this.height)
+            this.width = Math.min(window.innerWidth, 1000)
+            this.height = Math.min(this.width, this.height)
             this.svg = d3
                 .select('#containerRaceChart')
                 .append('svg')
@@ -323,7 +326,7 @@ export default {
                     .select('.xAxis')
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .call(ctx.xAxis)
 
                 let bars = ctx.svg
@@ -344,12 +347,12 @@ export default {
                     .style('fill', d => d.color)
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr('y', d => ctx.y(d.rank) + 5)
 
                 bars.transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr(
                         'width',
                         d => Math.max(ctx.x(d.value) - ctx.x(0) - 1),
@@ -360,7 +363,7 @@ export default {
                 bars.exit()
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr(
                         'width',
                         d => Math.max(ctx.x(d.value) - ctx.x(0) - 1),
@@ -386,7 +389,7 @@ export default {
                     .html(d => d.name)
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr(
                         'y',
                         d => ctx.y(d.rank) + 5 + (ctx.y(1) - ctx.y(0)) / 2 + 1
@@ -395,7 +398,7 @@ export default {
                 labels
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr('x', d => ctx.x(d.value) - 8)
                     .attr(
                         'y',
@@ -406,7 +409,7 @@ export default {
                     .exit()
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr('x', d => ctx.x(d.value) - 8)
                     .attr('y', () => ctx.y(ctx.top + 1) + 5)
                     .remove()
@@ -424,7 +427,7 @@ export default {
                     .text(d => d3.format(',.0f')(d.lastValue))
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr(
                         'y',
                         d => ctx.y(d.rank) + 5 + (ctx.y(1) - ctx.y(0)) / 2 + 1
@@ -433,7 +436,7 @@ export default {
                 valueLabels
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr('x', d => ctx.x(d.value) + 5)
                     .attr(
                         'y',
@@ -460,7 +463,7 @@ export default {
                     .exit()
                     .transition()
                     .duration(ctx.duration)
-                    .ease(d3Ease.easeLinear)
+                    .ease(easeLinear)
                     .attr('x', d => ctx.x(d.value) + 5)
                     .attr('y', () => ctx.y(ctx.top + 1) + 5)
                     .remove()

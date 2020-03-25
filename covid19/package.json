@@ -16,6 +16,7 @@
         "d3-array": "^2.4.0",
         "d3-color": "^1.4.0",
         "d3-ease": "^1.0.6",
+        "d3-interpolate-path": "^1.1.1",
         "d3-scale-chromatic": "^1.5.0",
         "d3-svg-legend": "^2.25.6",
         "d3-time": "^1.1.0",

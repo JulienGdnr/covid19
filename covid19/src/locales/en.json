@@ -22,5 +22,10 @@
     "refresh": "Refresh",
     "top": "Top",
     "countries": "countries",
-    "vertical_desc": "This graph displays the [z] of [x] by [y], for each day"
+    "vertical_desc": "This graph displays the [z] of [x] by [y], for each day",
+    "started": "exceeded 10 dead on",
+    "on": "",
+    "day": "Day",
+    "volunteer": "In support of all the volunteers on the planet",
+    "line_sentence": "This graph is the evolution of the [x] for each country brought back to the date when the country saw its <b>10th death</b>"
 }
