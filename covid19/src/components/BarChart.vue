@@ -1,17 +1,8 @@
 <template>
     <v-row align="center" justify="center">
         <v-spacer></v-spacer>
-        <v-progress-circular
-            indeterminate
-            size="50"
-            color="primary"
-            v-if="loading"
-        ></v-progress-circular>
-        <div
-            id="container"
-            style="background:#e9e9e9;border-radius:10px"
-            v-if="data.length > 0"
-        ></div>
+        <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
+        <div id="container" style="background:#e9e9e9;border-radius:10px" v-if="data.length > 0"></div>
         <v-spacer></v-spacer>
     </v-row>
 </template>
@@ -116,9 +107,10 @@ export default {
                 this.getting = true
                 this.loading = true
                 this.rawData = { dates: [], data: [] }
+                const d = format(new Date(), 'd-M-Y')
                 d3.selectAll('svg').remove()
                 return fetch(
-                    '/vertical/' + this.measure + '/' + this.top + '.json'
+                    `/vertical/${this.measure}/${this.top}.json?d=${d}`
                 )
                     .then(resp => resp.json())
                     .then(res => {
@@ -294,7 +286,7 @@ export default {
                             ctx.div
                                 .html(s)
                                 .style('left', d3.event.pageX + 30 + 'px')
-                                .style('top', d3.event.pageY - 28 + 'px')
+                                .style('top', d3.event.pageY - 100 + 'px')
                         })
                         .on('mouseout', () => {
                             ctx.div
@@ -492,11 +484,10 @@ export default {
         data() {
             let output = []
             let l = this.rawData.data.length
-
             for (let i = l - 1; i >= 0; i--) {
                 output.push(this.rawData.data[i].values)
             }
-
+            if (output.length == 0) return []
             output = output[0].map(function(col, i) {
                 return output.map(function(row) {
                     return row[i]
@@ -548,13 +539,6 @@ export default {
 </script>
 
 <style>
-body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    margin: auto;
-    position: relative;
-    /* width: 960px; */
-}
-
 text {
     font: 10px sans-serif;
 }
@@ -586,6 +570,7 @@ div.tooltip {
     -ms-user-select: none;
     user-select: none;
     opacity: 1;
+    z-index: 1000;
 }
 .legendOrdinal path {
     fill: white;

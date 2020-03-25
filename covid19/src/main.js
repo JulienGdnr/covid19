@@ -9,7 +9,7 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 Vue.config.productionTip = false
 Vue.mixin(mixin)
 Vue.use(VueAnalytics, {
-    id: 'UA-226788719-1',
+    id: 'G-226788719',
     checkDuplicatedScript: true,
 })
 

@@ -252,5 +252,5 @@ def scanDailyFolder():
 
 
 if __name__ == "__main__":
-    # getDates()
+    getDates()
     scanDailyFolder()

@@ -8,17 +8,14 @@
                 class="ml-4"
                 outlined
                 @click=";(i = 0), iterate()"
-                ><v-icon>refresh</v-icon>{{ $t('refresh') }}</v-btn
             >
+                <v-icon>refresh</v-icon>
+                {{ $t('refresh') }}
+            </v-btn>
         </v-row>
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
-            <v-progress-circular
-                indeterminate
-                size="50"
-                color="primary"
-                v-if="loading"
-            ></v-progress-circular>
+            <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
             <div
                 id="containerRaceChart"
                 :style="
@@ -222,8 +219,9 @@ export default {
                 this.getting = true
                 this.loading = true
                 this.rawData = { data: [], dates: [] }
+                const d = format(new Date(), 'd-M-Y')
                 d3.selectAll('svg').remove()
-                return fetch('/race/' + this.measure + '.json')
+                return fetch(`/race/${this.measure}.json?d=${d}`)
                     .then(resp => resp.json())
                     .then(res => {
                         this.rawData = res

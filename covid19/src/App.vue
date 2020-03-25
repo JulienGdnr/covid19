@@ -76,29 +76,60 @@
                     v-html="vertical_description"
                 ></v-subheader
             ></v-row>
-            <v-window v-model="window">
-                <v-window-item>
-                    <bar-chart
-                        :top="top"
-                        :lang="lang"
-                        :choice="choice"
-                        :measures="measures"
-                        :measure="measure"
-                        @getData="choice = 'stacked'"
-                        v-if="window == 0 && !moving"
-                    />
-                </v-window-item>
-                <v-window-item>
-                    <race-chart
-                        :top="top"
-                        :lang="lang"
-                        :measures="measures"
-                        :measure="measure"
-                        v-if="window == 1 && !moving"
-                    />
-                </v-window-item>
-            </v-window>
+            <bar-chart
+                :top="top"
+                :lang="lang"
+                :choice="choice"
+                :measures="measures"
+                :measure="measure"
+                @getData="choice = 'stacked'"
+                v-if="window == 0 && !moving"
+            />
+            <race-chart
+                :top="top"
+                :lang="lang"
+                :measures="measures"
+                :measure="measure"
+                v-if="window == 1 && !moving"
+            />
         </v-col>
+        <v-footer dark padless>
+            <v-card light class="flex" flat tile>
+                <v-card-title class="blue-grey lighten-5">
+                    <strong class="subheading"
+                        >In support of all the volunteers on the planet</strong
+                    >
+
+                    <v-spacer></v-spacer>
+
+                    <a
+                        style="text-decoration:none"
+                        v-for="icon in icons"
+                        :key="icon.i"
+                        class="mx-4"
+                        dark
+                        :href="icon.l"
+                        target="_blank"
+                        icon
+                    >
+                        <v-icon size="24px">{{ icon.i }}</v-icon>
+                    </a>
+                </v-card-title>
+
+                <v-card-text dark class="py-2 white--text text-center black">
+                    {{ new Date().getFullYear() }} —
+                    <strong
+                        >Designed with ❤️ by
+                        <a
+                            target="_blank"
+                            href="https://github.com/JulienGdnr/covid19"
+                            >@julien godenir</a
+                        >
+                        to help raise awareness on covid19</strong
+                    >
+                </v-card-text>
+            </v-card>
+        </v-footer>
     </v-app>
 </template>
 
@@ -124,6 +155,22 @@ export default {
         items,
         window: 0,
         moving: false,
+        icons: [
+            {
+                i: 'fab fa-facebook',
+                l: 'https://www.facebook.com/vidacolombiaorg/',
+            },
+            { i: 'fas fa-globe', l: 'https://vidacolombia.org/' },
+            { i: 'fab fa-twitter', l: 'https://twitter.com/VidaColombia1' },
+            {
+                i: 'fab fa-linkedin',
+                l: 'https://www.linkedin.com/in/julien-godenir/',
+            },
+            {
+                i: 'fab fa-instagram',
+                l: 'https://www.instagram.com/vidacolombia/',
+            },
+        ],
     }),
     computed: {
         breakpoint() {
