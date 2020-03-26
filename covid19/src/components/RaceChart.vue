@@ -1,7 +1,7 @@
 <template>
     <v-col>
         <v-row align="center" justify="center" class="mb-3">
-            <div class="title" v-html="sentence"></div>
+            <v-subheader class="title" v-html="sentence"></v-subheader>
             <v-btn
                 v-if="i == dates.length - 1"
                 rounded
@@ -88,9 +88,11 @@ export default {
     }),
     computed: {
         sentence() {
-            return `${this.$t('top')} ${this.top} <span style="color:${
+            return `${this.top} ${this.$t('most')} <span style="color:${
                 this.textColor
-            }">${this.$t(this.measure).toLowerCase()}</span> ${this.nice_date}`
+            }">&nbsp;${this.$t(this.measure).toLowerCase()}&nbsp;</span> ${
+                this.nice_date
+            }`
         },
         nice_date() {
             return this.lang == 'en'

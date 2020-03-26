@@ -26,6 +26,8 @@
     "started": "10 Tote überschritten",
     "on": "",
     "day": "Tag",
+    "most": "länder mit den meisten",
     "volunteer": "Zur Unterstützung aller Freiwilligen auf dem Planeten",
+    "map": "",
     "line_sentence": "Diese Grafik zeigt die Entwicklung der [x] für jedes Land, das auf das Datum zurückgeführt wurde, an dem das Land den <b>10. Todesfall</b> verzeichnete."
 }

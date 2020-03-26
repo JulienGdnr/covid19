@@ -13,7 +13,7 @@
                     >
                         <v-btn :input-value="active" icon @click="toggle">
                             <v-icon
-                                :style="i == 1 ? 'transform:rotate(90deg)' : ''"
+                                :style="i == 0 ? 'transform:rotate(90deg)' : ''"
                                 >{{ n }}</v-icon
                             >
                         </v-btn>
@@ -44,7 +44,23 @@
                         v-model="lang"
                     ></v-select>
                 </v-col>
-                <v-col :cols="breakpoint == 'xs' ? '' : '2'">
+                <v-col
+                    v-if="mode == 'map'"
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                >
+                    <v-select
+                        outlined
+                        dense
+                        :label="$t('choose') + ' ' + $t('projection')"
+                        width="100"
+                        :items="projections"
+                        v-model="projection"
+                    ></v-select>
+                </v-col>
+                <v-col
+                    v-if="mode != 'line' && mode != 'map'"
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                >
                     <v-select
                         outlined
                         dense
@@ -85,12 +101,13 @@
                     </v-radio-group>
                 </v-col>
             </v-row>
-            <v-row justify="center" v-if="mode == 'bar'">
-                <v-subheader
-                    :class="breakpoint == 'xs' ? 'pa-0 ma-0' : 'title'"
-                    v-html="vertical_description"
-                ></v-subheader>
-            </v-row>
+            <race-chart
+                :top="top"
+                :lang="lang"
+                :measures="measures"
+                :measure="measure"
+                v-if="mode == 'race' && !moving"
+            />
             <bar-chart
                 :top="top"
                 :lang="lang"
@@ -98,14 +115,7 @@
                 :measures="measures"
                 :measure="measure"
                 @getData="choice = 'stacked'"
-                v-if="window == 0 && !moving"
-            />
-            <race-chart
-                :top="top"
-                :lang="lang"
-                :measures="measures"
-                :measure="measure"
-                v-if="window == 1 && !moving"
+                v-if="mode == 'bar' && !moving"
             />
             <line-chart
                 :top="top"
@@ -113,7 +123,13 @@
                 :measures="measures"
                 :measure="measure"
                 :log="log"
-                v-if="window == 2 && !moving"
+                v-if="mode == 'line' && !moving"
+            />
+            <map-chart
+                :proj="projection"
+                :measure="measure"
+                :lang="lang"
+                v-if="mode == 'map'"
             />
         </v-col>
         <v-footer dark padless>
@@ -158,6 +174,7 @@
 import BarChart from '@/components/BarChart'
 import RaceChart from '@/components/RaceChart'
 import LineChart from '@/components/LineChart'
+import MapChart from '@/components/MapChart'
 let items = []
 for (let i = 1; i <= 20; i++) {
     items.push(i)
@@ -168,6 +185,7 @@ export default {
         BarChart,
         RaceChart,
         LineChart,
+        MapChart,
     },
     data: () => ({
         top: 10,
@@ -176,11 +194,24 @@ export default {
         measure: 'confirmed_deaths_recovered',
         lang: 'en',
         items,
-        window: 0,
-        windows: ['bar_chart', 'bar_chart', 'multiline_chart'],
+        window: 3,
+        windows: ['bar_chart', 'bar_chart', 'multiline_chart', 'language'],
         log: false,
         moving: false,
+        projection: 'geoOrthographic',
+        projections: [
+            'geoOrthographic',
+            'geoMiller',
+            'geoAitoff',
+            'geoLagrange',
+            'geoBromley',
+            'geoGilbert',
+        ].map(value => ({ value, text: value.replace('geo', '') })),
         icons: [
+            {
+                i: 'fab fa-github',
+                l: 'https://github.com/JulienGdnr/covid19',
+            },
             {
                 i: 'fab fa-facebook',
                 l: 'https://www.facebook.com/vidacolombiaorg/',
@@ -202,7 +233,7 @@ export default {
             return this.$vuetify.breakpoint.name
         },
         mode() {
-            return ['bar', 'race'][this.window]
+            return ['race', 'bar', 'line', 'map'][this.window]
         },
         color() {
             return {
@@ -211,17 +242,6 @@ export default {
                 deaths: 'red',
                 recovered: 'green',
             }[this.measure]
-        },
-        vertical_description() {
-            return this.$t('vertical_desc')
-                .replace(
-                    '[x]',
-                    `<b style="color:${this.color}">&nbsp;${this.measureNames[
-                        this.measure
-                    ].toLowerCase()}&nbsp;</b>`
-                )
-                .replace('[y]', this.$t('countries'))
-                .replace('[z]', this.$t('top').toLowerCase() + ' ' + this.top)
         },
         measures() {
             if (this.mode == 'bar') {

@@ -11,7 +11,6 @@ LANGS = ["fr", "es", "en", "de"]
 
 
 def readCsv(name, mapping, myKey="code"):
-    the_reader = DictReader(open(name, 'r', encoding="utf8"))
     output = [{key: _[value] for key, value in mapping.items()}
               for _ in the_reader]
     return {_[myKey]: {k: v for k, v in _.items() if k != myKey} for _ in output}

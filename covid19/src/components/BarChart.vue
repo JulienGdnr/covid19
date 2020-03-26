@@ -1,19 +1,22 @@
 <template>
-    <v-row align="center" justify="center">
-        <v-spacer></v-spacer>
-        <v-progress-circular
-            indeterminate
-            size="50"
-            color="primary"
-            v-if="loading"
-        ></v-progress-circular>
-        <div
-            id="container"
-            style="background:#e9e9e9;border-radius:10px"
-            v-if="data.length > 0"
-        ></div>
-        <v-spacer></v-spacer>
-    </v-row>
+    <v-col>
+        <v-row justify="center">
+            <v-subheader
+                :class="breakpoint == 'xs' ? 'pa-0 ma-0' : 'title'"
+                v-html="vertical_description"
+            ></v-subheader>
+        </v-row>
+        <v-row align="center" justify="center">
+            <v-spacer></v-spacer>
+            <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
+            <div
+                id="container"
+                style="background:#e9e9e9;border-radius:10px"
+                v-if="data.length > 0"
+            ></div>
+            <v-spacer></v-spacer>
+        </v-row>
+    </v-col>
 </template>
 
 <script>
@@ -434,6 +437,17 @@ export default {
         },
     },
     computed: {
+        vertical_description() {
+            return this.$t('vertical_desc')
+                .replace(
+                    '[x]',
+                    `<b style="color:${this.textColor}">&nbsp;${this.$t(
+                        this.measure
+                    ).toLowerCase()}&nbsp;</b>`
+                )
+                .replace('[y]', this.$t('countries'))
+                .replace('[z]', this.top + ' ' + this.$t('most').toLowerCase())
+        },
         margin() {
             return {
                 top: this.breakpoint == 'xs' ? 10 : 40,

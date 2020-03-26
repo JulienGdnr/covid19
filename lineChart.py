@@ -45,6 +45,8 @@ with open(PATH+"race/deaths.json") as f:
     for el in data:
         if el["value"] >= 10 and el["lastValue"] <= 10:
             start_dates[el["code"]] = int(el["date"].replace("-", ""))
+            if el["code"] == "USA":
+                print(el["code"], el["value"], el["lastValue"])
 
 print(start_dates)
 for fle in onlyfiles:
@@ -55,7 +57,7 @@ for fle in onlyfiles:
     code = None
     count = 0
     m = 0
-    print(len(data))
+    # print(len(data))
     for i, row in enumerate(data):
         if row["code"] != code:
             code = row["code"]
@@ -74,4 +76,4 @@ for fle in onlyfiles:
         os.makedirs(directory)
     with open(directory+"/"+fle, "w") as f:
         f.write(json.dumps({"data": output, "range": m}))
-print(start_dates)
+# print(start_dates)

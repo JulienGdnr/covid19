@@ -177,14 +177,18 @@ export default {
                         lastValue: this.log ? row.lastValue + 1 : row.lastValue,
                         color,
                     })
-
                 count += 1
             }
-            return output.map(r =>
-                r.length > 0
-                    ? [r[0].code, r[0].color, r, r[r.length - 1]]
-                    : [null, null, [], { value: 0 }]
-            )
+            if (r.length > 0) output.push(r)
+
+            return output
+                .map(r =>
+                    r.length > 0
+                        ? [r[0].code, r[0].color, r, r[r.length - 1]]
+                        : [null, null, [], { value: 0 }]
+                )
+                .sort((a, b) => b.value - a.value)
+            // .filter((a, i) => i < this.top)
         },
         max() {
             let max = 0
@@ -413,14 +417,14 @@ export default {
                 ctx.svg
                     .select('.xAxis')
                     .transition()
-                    .duration(ctx.duration)
+                    .duration(ctx.duration * 2)
                     .ease(easeLinear)
                     .call(ctx.xAxis)
 
                 ctx.svg
                     .select('.yAxis')
                     .transition()
-                    .duration(ctx.duration)
+                    .duration(ctx.duration * 2)
                     .ease(easeLinear)
                     .call(ctx.yAxis)
 
