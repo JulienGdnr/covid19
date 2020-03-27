@@ -12,10 +12,7 @@
                         v-slot:default="{ active, toggle }"
                     >
                         <v-btn :input-value="active" icon @click="toggle">
-                            <v-icon
-                                :style="i == 0 ? 'transform:rotate(90deg)' : ''"
-                                >{{ n }}</v-icon
-                            >
+                            <v-icon :style="i == 0 ? 'transform:rotate(90deg)' : ''">{{ n }}</v-icon>
                         </v-btn>
                     </v-item>
                 </v-item-group>
@@ -44,10 +41,7 @@
                         v-model="lang"
                     ></v-select>
                 </v-col>
-                <v-col
-                    v-if="mode == 'map'"
-                    :cols="breakpoint == 'xs' ? '' : '2'"
-                >
+                <v-col v-if="mode == 'map'" :cols="breakpoint == 'xs' ? '' : '2'">
                     <v-select
                         outlined
                         dense
@@ -57,10 +51,7 @@
                         v-model="projection"
                     ></v-select>
                 </v-col>
-                <v-col
-                    v-if="mode != 'line' && mode != 'map'"
-                    :cols="breakpoint == 'xs' ? '' : '2'"
-                >
+                <v-col v-if="mode != 'line' && mode != 'map'" :cols="breakpoint == 'xs' ? '' : '2'">
                     <v-select
                         outlined
                         dense
@@ -71,33 +62,12 @@
                         v-model="top"
                     ></v-select>
                 </v-col>
-                <v-col
-                    v-if="window == 2 && false"
-                    :cols="breakpoint == 'xs' ? '' : '2'"
-                >
-                    <v-switch
-                        inset
-                        dense
-                        :label="'Log'"
-                        type="number"
-                        v-model="log"
-                    ></v-switch>
+                <v-col v-if="window == 2 && false" :cols="breakpoint == 'xs' ? '' : '2'">
+                    <v-switch inset dense :label="'Log'" type="number" v-model="log"></v-switch>
                 </v-col>
-                <v-col
-                    :cols="breakpoint == 'xs' ? '' : '2'"
-                    v-if="mode == 'bar'"
-                >
-                    <v-radio-group
-                        class="mt-n3"
-                        :dense="breakpoint == 'xs'"
-                        v-model="choice"
-                    >
-                        <v-radio
-                            v-for="c in choices"
-                            :key="c"
-                            :value="c"
-                            :label="$t(c)"
-                        ></v-radio>
+                <v-col :cols="breakpoint == 'xs' ? '' : '2'" v-if="mode == 'bar'">
+                    <v-radio-group class="mt-n3" :dense="breakpoint == 'xs'" v-model="choice">
+                        <v-radio v-for="c in choices" :key="c" :value="c" :label="$t(c)"></v-radio>
                     </v-radio-group>
                 </v-col>
             </v-row>
@@ -125,12 +95,7 @@
                 :log="log"
                 v-if="mode == 'line' && !moving"
             />
-            <map-chart
-                :proj="projection"
-                :measure="measure"
-                :lang="lang"
-                v-if="mode == 'map'"
-            />
+            <map-chart :proj="projection" :measure="measure" :lang="lang" v-if="mode == 'map'" />
         </v-col>
         <v-footer dark padless>
             <v-card light class="flex" flat tile>
@@ -160,8 +125,7 @@
                         <a
                             target="_blank"
                             href="https://github.com/JulienGdnr/covid19"
-                            >@julien godenir</a
-                        >
+                        >@julien godenir</a>
                         to help raise awareness on covid19
                     </strong>
                 </v-card-text>
@@ -194,8 +158,8 @@ export default {
         measure: 'confirmed_deaths_recovered',
         lang: 'en',
         items,
-        window: 3,
-        windows: ['bar_chart', 'bar_chart', 'multiline_chart', 'language'],
+        window: 0,
+        windows: ['bar_chart', 'bar_chart', 'multiline_chart'],
         log: false,
         moving: false,
         projection: 'geoOrthographic',
