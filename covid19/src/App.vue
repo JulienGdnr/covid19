@@ -270,7 +270,7 @@ export default {
         },
         window(val) {
             if (
-                val == 0 &&
+                val == 1 &&
                 [
                     'confirmed_deaths_recovered',
                     'confirmed',

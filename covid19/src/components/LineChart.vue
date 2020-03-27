@@ -2,13 +2,7 @@
     <v-col>
         <v-row align="center" justify="center" class="mb-3">
             <div class="title" v-html="sentence"></div>
-            <v-btn
-                v-if="i == n"
-                rounded
-                class="ml-4"
-                outlined
-                @click=";(i = 0), iterate()"
-            >
+            <v-btn v-if="i == n" rounded class="ml-4" outlined @click=";(i = 0), iterate()">
                 <v-icon>refresh</v-icon>
                 {{ $t('refresh') }}
             </v-btn>
@@ -18,12 +12,7 @@
         </v-row>
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
-            <v-progress-circular
-                indeterminate
-                size="50"
-                color="primary"
-                v-if="loading"
-            ></v-progress-circular>
+            <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
             <div
                 id="containerLineChart"
                 :style="
@@ -331,9 +320,9 @@ export default {
                         start.date
                     )}</b><br><span>${ctx.$t(ctx.measure)} ${ctx.$t(
                         'on'
-                    )} ${ctx.formatDate(end.date)}</span> : <b>${
+                    )} ${ctx.formatDate(end.date)}</span> : <b>${Math.round(
                         end.value
-                    } </b></div>`
+                    )} </b></div>`
                     ctx.div
                         .transition()
                         .duration(100)
