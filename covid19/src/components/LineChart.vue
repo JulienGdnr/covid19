@@ -2,14 +2,29 @@
     <v-col>
         <v-row align="center" justify="center" class="mb-3">
             <div class="title" v-html="sentence"></div>
-            <v-btn v-if="i == n" rounded class="ml-4" outlined @click=";(i = 0), iterate()">
+            <v-btn v-if="i == n - 1" rounded class="ml-4" outlined @click=";(i = 0), iterate()">
                 <v-icon>refresh</v-icon>
                 {{ $t('refresh') }}
             </v-btn>
         </v-row>
         <v-row align="center" justify="center">
-            <v-subheader class="title">{{ $t('day') + ' ' + i }}</v-subheader>
+            <v-subheader class="title">
+                {{ $t('day') + ' ' + i }}
+                <v-btn icon @click="stopped = !stopped">
+                    <v-icon>{{stopped ?'play_arrow': 'pause'}}</v-icon>
+                </v-btn>
+            </v-subheader>
         </v-row>
+        <v-slider
+            @end="iterate()"
+            @mouseup="iterate()"
+            :thumb-size="24"
+            thumb-label="always"
+            :max="Math.max(n-1, 0)"
+            :min="0"
+            v-model="i"
+            :disabled="!stopped && false"
+        ></v-slider>
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
             <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
@@ -62,8 +77,9 @@ export default {
         loading: false,
         getting: false,
         stopped: false,
+        inv_duration: 400,
         i: 0,
-        duration: 1000,
+        duration: 800,
         margin: { top: 50, right: 50, bottom: 50, left: 50 },
         width: 100,
         height: 100,
@@ -81,6 +97,7 @@ export default {
         svg: null,
         locales,
         labels: null,
+        logger: [],
     }),
     computed: {
         n() {
@@ -195,7 +212,7 @@ export default {
                     min = Math.min(min, r.value)
                 }
             }
-            return min
+            return min + (this.log ? 0.0001 : 0)
         },
     },
     methods: {
@@ -210,10 +227,11 @@ export default {
             if (!this.getting) {
                 if (!this.stopped) {
                     this.i = 0
+                    this.rawData = { data: [], range: 0 }
                 }
                 this.getting = true
                 this.loading = true
-                this.rawData = { data: [], range: 0 }
+
                 const d = format(new Date(), 'd-M-Y')
                 d3.selectAll('svg').remove()
                 return fetch(`/line/${this.measure}.json?d=${d}`)
@@ -303,6 +321,7 @@ export default {
                 .attr('class', 'tooltip')
                 .style('opacity', 0)
             let ctx = this
+
             ctx.svg
                 .selectAll('path')
                 .on('mouseover', d => {
@@ -459,7 +478,11 @@ export default {
                 )
                 .shapePadding(10)
                 .scale(this.colorScale.domain(this.orderedCountries))
-            this.svg.select('.legendOrdinal').call(legendOrdinal)
+            this.svg
+                .select('.legendOrdinal')
+                // .transition()
+                // .duration(this.duration)
+                .call(legendOrdinal)
         },
         countryValues() {
             let valueLabels = this.svg
@@ -489,8 +512,17 @@ export default {
                 .transition()
                 .duration(this.duration)
                 .ease(easeLinear)
-                .attr('x', d => this.xScale(d[3].i) + 5)
-                .attr('y', d => this.yScale(d[3].value) + 5)
+                .attr('x', d => {
+                    // this.logger.push(this.xScale(d[3].i))
+                    return this.xScale(d[3].i) + 5
+                })
+                .attr('y', d => {
+                    let v = this.yScale(d[3].value)
+                    // console.log(d[3].value, v)
+                    // this.logger.push(v)
+                    return v + 5
+                })
+                // .attr('y', this.yScale(1))
                 // .html(d => d[3].value)
                 .tween('text', function(d) {
                     let val = d[3]
@@ -595,6 +627,14 @@ export default {
         this.getData()
     },
     watch: {
+        inv_duration(v) {
+            this.duration = 1000 - v
+        },
+        stopped(val) {
+            if (!val) {
+                this.iterate()
+            }
+        },
         measure() {
             this.getData()
         },

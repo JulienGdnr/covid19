@@ -37,43 +37,46 @@ def getMeasure(row, m):
         return (int(row.get(arr[0], 0) - row.get(arr[1], 0) - row.get(arr[2], 0))) / float(row[arr[-1]])
 
 
-start_dates = {}
-with open(PATH+"race/deaths.json") as f:
-    data = json.loads(f.read())
-    dates = data["dates"]
-    data = data["data"]
-    for el in data:
-        if el["value"] >= 10 and el["lastValue"] <= 10:
-            start_dates[el["code"]] = int(el["date"].replace("-", ""))
-            if el["code"] == "USA":
-                print(el["code"], el["value"], el["lastValue"])
-
-print(start_dates)
-for fle in onlyfiles:
-    output = []
-    with open(PATH+"race/"+fle) as f:
+def createLine():
+    start_dates = {}
+    with open(PATH+"race/deaths.json") as f:
         data = json.loads(f.read())
-    data = data["data"]
-    code = None
-    count = 0
-    m = 0
-    # print(len(data))
-    for i, row in enumerate(data):
-        if row["code"] != code:
-            code = row["code"]
-            count = 0
-        d = int(row["date"].replace("-", ""))
-        try:
-            if d >= start_dates[code]:
-                row["i"] = count
-                output.append(row)
-                m = max(m, count)
-                count += 1
-        except:
-            pass
-    directory = PATH+"line"
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    with open(directory+"/"+fle, "w") as f:
-        f.write(json.dumps({"data": output, "range": m}))
+        dates = data["dates"]
+        data = data["data"]
+        for el in data:
+            if el["value"] >= 10 and el["lastValue"] <= 10:
+                start_dates[el["code"]] = int(el["date"].replace("-", ""))
+                if el["code"] == "USA":
+                    print(el["code"], el["value"], el["lastValue"])
+    for fle in onlyfiles:
+        output = []
+        with open(PATH+"race/"+fle) as f:
+            data = json.loads(f.read())
+        data = data["data"]
+        code = None
+        count = 0
+        m = 0
+        # print(len(data))
+        for i, row in enumerate(data):
+            if row["code"] != code:
+                code = row["code"]
+                count = 0
+            d = int(row["date"].replace("-", ""))
+            try:
+                if d >= start_dates[code]:
+                    row["i"] = count
+                    output.append(row)
+                    m = max(m, count)
+                    count += 1
+            except:
+                pass
+        directory = PATH+"line"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(directory+"/"+fle, "w") as f:
+            f.write(json.dumps({"data": output, "range": m}))
 # print(start_dates)
+
+
+if __name__ == "__main__":
+    createLine()

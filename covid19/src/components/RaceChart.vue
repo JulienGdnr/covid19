@@ -2,6 +2,9 @@
     <v-col>
         <v-row align="center" justify="center" class="mb-3">
             <v-subheader class="title" v-html="sentence"></v-subheader>
+            <v-btn icon @click="stopped = !stopped">
+                <v-icon>{{stopped ?'play_arrow': 'pause'}}</v-icon>
+            </v-btn>
             <v-btn
                 v-if="i == dates.length - 1"
                 rounded
@@ -13,14 +16,18 @@
                 {{ $t('refresh') }}
             </v-btn>
         </v-row>
+        <v-slider
+            @end="iterate()"
+            @mouseup="iterate()"
+            :max="Math.max(dates.length - 1, 0)"
+            :min="0"
+            v-model="i"
+            :disabled="!stopped && false"
+        ></v-slider>
+
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
-            <v-progress-circular
-                indeterminate
-                size="50"
-                color="primary"
-                v-if="loading"
-            ></v-progress-circular>
+            <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
             <div
                 id="containerRaceChart"
                 :style="
@@ -63,7 +70,7 @@ export default {
     data: () => ({
         loading: false,
         getting: false,
-        stoped: false,
+        stopped: false,
         height: 600,
         barSize: 48,
         width: 960,
@@ -122,18 +129,18 @@ export default {
                 .tickFormat(d => d3.format(',')(d))
         },
         date() {
-            return this.dates.length > this.i ? this.dates[this.i] : null
+            return this.dates.length > this.i
+                ? this.dates[this.i]
+                : '2000-01-01'
         },
         data() {
-            return this.rawData.data.map(d => {
-                return {
-                    ...d,
-                    color: this.has_color[d.code]
-                        ? this.has_color[d.code]
-                        : this.countryColor[d.code],
-                    name: this.countryNames[d.code],
-                }
-            })
+            return this.rawData.data.map(d => ({
+                ...d,
+                color: this.has_color[d.code]
+                    ? this.has_color[d.code]
+                    : this.countryColor[d.code],
+                name: this.countryNames[d.code],
+            }))
         },
         barPadding() {
             return (
@@ -218,12 +225,12 @@ export default {
         },
         getData() {
             if (!this.getting) {
-                if (!this.stoped) {
-                    this.i = 0
-                }
+                // if (!this.stopped) {
+                //     this.i = 0
+                //     this.rawData = { data: [], dates: [] }
+                // }
                 this.getting = true
                 this.loading = true
-                this.rawData = { data: [], dates: [] }
                 const d = format(new Date(), 'd-M-Y')
                 d3.selectAll('svg').remove()
                 return fetch(`/race/${this.measure}.json?d=${d}`)
@@ -272,12 +279,10 @@ export default {
                 .append('rect')
                 .attr('class', 'bar')
                 .attr('x', this.x(0) + 1)
-                .attr(
-                    'width',
-                    d => Math.max(this.x(d.value) - this.x(0) - 1),
-                    0
+                .attr('width', d =>
+                    Math.max(this.x(d.value) - this.x(0) - 1, 0)
                 )
-                .attr('y', d => this.y(d.rank) + 5)
+                .attr('y', d => this.y(d.rank) + 5 || 0)
                 .attr('height', this.y(1) - this.y(0) - this.barPadding)
                 .style('fill', d => d.color)
 
@@ -290,7 +295,9 @@ export default {
                 .attr('x', d => this.x(d.value) - 8)
                 .attr(
                     'y',
-                    d => this.y(d.rank) + 5 + (this.y(1) - this.y(0)) / 2 + 1
+                    d =>
+                        this.y(d.rank) + 5 + (this.y(1) - this.y(0)) / 2 + 1 ||
+                        0
                 )
                 .style('text-anchor', 'end')
                 .html(d => d.name)
@@ -304,15 +311,19 @@ export default {
                 .attr('x', d => this.x(d.value) + 5)
                 .attr(
                     'y',
-                    d => this.y(d.rank) + 5 + (this.y(1) - this.y(0)) / 2 + 1
+                    d =>
+                        this.y(d.rank) + 5 + (this.y(1) - this.y(0)) / 2 + 1 ||
+                        0
                 )
                 .text(d => d3.format(',.0f')(d.lastValue))
 
-            if (!this.stoped) {
+            if (!this.stopped) {
                 this.iterate()
             }
         },
         iterate() {
+            console.log(this.i)
+            // this.$nextTick(() => {
             let ctx = this
             let ticker = d3.interval(() => {
                 ctx.dateSlice = ctx.data
@@ -339,39 +350,33 @@ export default {
                     .append('rect')
                     .attr('class', d => `bar ${d.code.replace(/\s/g, '_')}`)
                     .attr('x', ctx.x(0) + 1)
-                    .attr(
-                        'width',
-                        d => Math.max(ctx.x(d.value) - ctx.x(0) - 1),
-                        0
+                    .attr('width', d =>
+                        Math.max(ctx.x(d.value) - ctx.x(0) - 1, 0)
                     )
-                    .attr('y', () => ctx.y(ctx.top + 1) + 5)
+                    .attr('y', () => ctx.y(ctx.top + 1) + 5 || 0)
                     .attr('height', ctx.y(1) - ctx.y(0) - ctx.barPadding)
                     .style('fill', d => d.color)
                     .transition()
                     .duration(ctx.duration)
                     .ease(easeLinear)
-                    .attr('y', d => ctx.y(d.rank) + 5)
+                    .attr('y', d => ctx.y(d.rank) + 5 || 0)
 
                 bars.transition()
                     .duration(ctx.duration)
                     .ease(easeLinear)
-                    .attr(
-                        'width',
-                        d => Math.max(ctx.x(d.value) - ctx.x(0) - 1),
-                        0
+                    .attr('width', d =>
+                        Math.max(ctx.x(d.value) - ctx.x(0) - 1, 0)
                     )
-                    .attr('y', d => ctx.y(d.rank) + 5)
+                    .attr('y', d => ctx.y(d.rank) + 5 || 0)
 
                 bars.exit()
                     .transition()
                     .duration(ctx.duration)
                     .ease(easeLinear)
-                    .attr(
-                        'width',
-                        d => Math.max(ctx.x(d.value) - ctx.x(0) - 1),
-                        0
+                    .attr('width', d =>
+                        Math.max(ctx.x(d.value) - ctx.x(0) - 1, 0)
                     )
-                    .attr('y', () => ctx.y(ctx.top + 1) + 5)
+                    .attr('y', () => ctx.y(ctx.top + 1) + 5 || 0)
                     .remove()
 
                 let labels = ctx.svg
@@ -470,18 +475,27 @@ export default {
                     .attr('y', () => ctx.y(ctx.top + 1) + 5)
                     .remove()
 
-                if (ctx.date == ctx.dates[ctx.dates.length - 1]) {
+                if (
+                    ctx.date == ctx.dates[ctx.dates.length - 1] ||
+                    ctx.stopped
+                ) {
                     ticker.stop()
                 } else {
                     ctx.i += 1
                 }
             }, ctx.duration)
+            // }, this)
         },
     },
     mounted() {
         this.getData()
     },
     watch: {
+        stopped(val) {
+            if (!val) {
+                this.iterate()
+            }
+        },
         measure() {
             this.getData()
         },

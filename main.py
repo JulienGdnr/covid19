@@ -5,6 +5,10 @@ import time
 import os
 from csv import DictReader
 from datetime import datetime, date, timedelta
+from lineChart import createLine
+from raceChart import createRace
+from verticalChart import createVertical
+from bubbleChart import createBubble
 
 
 LANGS = ["fr", "es", "en", "de"]
@@ -253,4 +257,13 @@ def scanDailyFolder():
 
 if __name__ == "__main__":
     getDates()
+
     scanDailyFolder()
+
+    createVertical()
+
+    createRace()
+
+    createLine()
+
+    createBubble()

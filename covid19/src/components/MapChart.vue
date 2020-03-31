@@ -14,16 +14,18 @@
             </v-btn>
         </v-row>
         <v-row align="center" justify="center">
-            <v-subheader class="title">{{ formatDate(date) }}</v-subheader>
+            <v-subheader class="title">
+                {{ formatDate(date) }}
+                <v-btn icon @click="stopped = !stopped">
+                    <v-icon>{{stopped ?'play_arrow': 'pause'}}</v-icon>
+                </v-btn>
+            </v-subheader>
         </v-row>
+        <v-slider @end="iterate()" :max="dates.length" :min="0" v-model="i" :disabled="!stopped"></v-slider>
+
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
-            <v-progress-circular
-                indeterminate
-                size="50"
-                color="primary"
-                v-if="loading"
-            ></v-progress-circular>
+            <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
             <div
                 id="containerMapChart"
                 :style="
@@ -281,7 +283,18 @@ export default {
                         return t > 1.57 ? 'none' : this.textColor
                     })
 
-                if (ctx.date == ctx.dates[ctx.dates.length - 1]) {
+                d3.selectAll('circle')
+                    .exit()
+                    .transition()
+                    .duration(ctx.duration)
+                    .ease(easeLinear)
+                    .attr('r', '0')
+                    .remove()
+
+                if (
+                    ctx.date == ctx.dates[ctx.dates.length - 1] ||
+                    ctx.stopped
+                ) {
                     ticker.stop()
                 } else {
                     ctx.i += 1
@@ -374,6 +387,11 @@ export default {
         },
     },
     watch: {
+        stopped(val) {
+            if (!val) {
+                this.iterate()
+            }
+        },
         proj: {
             handler: function(val) {
                 this.rotate =

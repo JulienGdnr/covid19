@@ -62,9 +62,9 @@
                         v-model="top"
                     ></v-select>
                 </v-col>
-                <v-col v-if="window == 2 && false" :cols="breakpoint == 'xs' ? '' : '2'">
-                    <v-switch inset dense :label="'Log'" type="number" v-model="log"></v-switch>
-                </v-col>
+                <!-- <v-col v-if="window == 2" :cols="breakpoint == 'xs' ? '' : '2'">
+                    <v-switch inset :label="'Log'" type="number" v-model="log"></v-switch>
+                </v-col>-->
                 <v-col :cols="breakpoint == 'xs' ? '' : '2'" v-if="mode == 'bar'">
                     <v-radio-group class="mt-n3" :dense="breakpoint == 'xs'" v-model="choice">
                         <v-radio v-for="c in choices" :key="c" :value="c" :label="$t(c)"></v-radio>
@@ -86,6 +86,15 @@
                 :measure="measure"
                 @getData="choice = 'stacked'"
                 v-if="mode == 'bar' && !moving"
+            />
+            <bubble-chart
+                :top="top"
+                :lang="lang"
+                :measures="measures"
+                :measureX="measure"
+                :measureY="measure2"
+                :log="log"
+                v-if="mode == 'bubble' && !moving"
             />
             <line-chart
                 :top="top"
@@ -138,6 +147,7 @@
 import BarChart from '@/components/BarChart'
 import RaceChart from '@/components/RaceChart'
 import LineChart from '@/components/LineChart'
+import BubbleChart from '@/components/BubbleChart'
 import MapChart from '@/components/MapChart'
 let items = []
 for (let i = 1; i <= 20; i++) {
@@ -150,16 +160,20 @@ export default {
         RaceChart,
         LineChart,
         MapChart,
+        BubbleChart,
     },
     data: () => ({
         top: 10,
         choice: 'stacked',
         choices: ['stacked', 'percent'],
         measure: 'confirmed_deaths_recovered',
+        measure2: 'deaths',
         lang: 'en',
         items,
         window: 0,
         windows: ['bar_chart', 'bar_chart', 'multiline_chart'],
+        // windows: ['bar_chart', 'bar_chart', 'multiline_chart', 'bubble_chart'],
+        // windows: ['bar_chart', 'bar_chart', 'multiline_chart', 'language'],
         log: false,
         moving: false,
         projection: 'geoOrthographic',
@@ -197,7 +211,7 @@ export default {
             return this.$vuetify.breakpoint.name
         },
         mode() {
-            return ['race', 'bar', 'line', 'map'][this.window]
+            return ['race', 'bar', 'line', 'bubble', 'map'][this.window]
         },
         color() {
             return {
