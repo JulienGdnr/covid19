@@ -25,17 +25,19 @@ def getDivisionMeasure(o, m):
     return o["m1"] - o["m2"] - o["m3"]
 
 
-def createVertical():
+def createVertical(delta=False, continent=False):
     def createArray(code, measure):
         output = []
+        prec = 0
         for d in dates:
             try:
                 val = measure_country_date[measure][code][d]
             except:
                 val = 0
-            output.append(val)
+            output.append(val if not delta else val - prec)
+            prec = val
         return output
-    with open(PATH + "data.json") as f:
+    with open(PATH + ("data.json" if not continent else "data-continent.json")) as f:
         data = json.loads(f.read())
         dates = set([_["date"] for _ in data])
         dates = sorted(dates)
@@ -55,6 +57,13 @@ def createVertical():
         for m in all_measures:
             o[m] = o.get(m, {})
             for row in data:
+                if row["date"] == dates[-2] and delta:
+                    o[m][row["code"]] = o[m].get(
+                        row["code"], {"m1": 0, "m2": 0, 'm3': 0})
+                    m1, m2, m3 = getMeasure(row, m)
+                    o[m][row["code"]]["m1"] -= m1
+                    o[m][row["code"]]["m2"] -= m2
+                    o[m][row["code"]]["m3"] -= m3
                 if row["date"] == dates[-1]:
                     o[m][row["code"]] = o[m].get(
                         row["code"], {"m1": 0, "m2": 0, 'm3': 0})
@@ -114,7 +123,9 @@ def createVertical():
                             res += others[j][i]
                         temp.append(res)
                 output.append({"code": "others", "measure": m, "values": temp})
-                directory = PATH+"vertical"
+                directory = PATH+"vertical" if not delta else PATH+"vertical-delta"
+                if continent:
+                    directory += "-continent"
                 if not os.path.exists(directory):
                     os.makedirs(directory)
                 directory += "/" + m
@@ -126,3 +137,4 @@ def createVertical():
 
 if __name__ == "__main__":
     createVertical()
+    createVertical(delta=True)

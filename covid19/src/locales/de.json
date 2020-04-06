@@ -22,12 +22,18 @@
     "refresh": "Aktualisieren",
     "top": "Top",
     "countries": "Länder",
-    "vertical_desc": "Diese Grafik stellt die [z] von [x] anhand verschiedener [y] dar.",
+    "continent": "Kontinent",
+    "continents": "Kontinente",
+    "by": "Nach",
+    "country": "Land",
+    "vertical_desc": "Diese Grafik stellt die [z] von [x]",
     "started": "10 Tote überschritten",
     "on": "",
     "day": "Tag",
-    "most": "länder mit den meisten",
+    "cumulated": "Cumulated",
+    "not_cumulated": "Not cumulated",
+    "most": "[c] mit den meisten",
     "volunteer": "Zur Unterstützung aller Freiwilligen auf dem Planeten",
     "map": "",
-    "line_sentence": "Diese Grafik zeigt die Entwicklung der [x] für jedes Land, das auf das Datum zurückgeführt wurde, an dem das Land den <b>10. Todesfall</b> verzeichnete."
+    "line_sentence": "Diese Grafik zeigt die Entwicklung der [x] für jedes [c], das auf das Datum zurückgeführt wurde, an dem das [c] den <b>10. Todesfall</b> verzeichnete."
 }

@@ -22,13 +22,19 @@
     "refresh": "Recommencer",
     "top": "Top",
     "countries": "pays",
+    "continent": "continent",
+    "continents": "continents",
+    "country": "pays",
+    "by": "Par",
     "vertical_desc": "Ce graphe montre les [z] [x] jour après jour",
     "started": "a dépassé les 10 morts le",
     "on": "le",
     "day": "Jour",
-    "most": "pays avec le plus de cas de",
-    "most_bis": "pays avec le plus de cas d'",
+    "cumulated": "Cumulé",
+    "not_cumulated": "Non cumulé",
+    "most": "[c] avec le plus de cas de",
+    "most_bis": "[c] avec le plus de cas d'",
     "volunteer": "En soutien à tous les bénévoles de la planète",
-    "map": "Carte de l'évolution des [x] par pays",
-    "line_sentence": "Ce graphe est l'évolution des [x] pour chaque pays ramené à la date où le pays a vu son <b>10ème décès</b>"
+    "map": "Carte de l'évolution des [x] par [c]",
+    "line_sentence": "Ce graphe est l'évolution des [x] pour chaque [c] ramené à la date où le [c] a vu son <b>10ème décès</b>"
 }

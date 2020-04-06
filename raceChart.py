@@ -31,8 +31,8 @@ def getMeasure(row, m):
         return (int(row.get(arr[0], 0) - row.get(arr[1], 0) - row.get(arr[2], 0))) / float(row[arr[-1]])
 
 
-def createRace():
-    with open(PATH + "data.json") as f:
+def createRace(continent=False):
+    with open(PATH + ("data.json" if not continent else "data-continent.json")) as f:
         data = json.loads(f.read())
         dates = set([_["date"] for _ in data])
         dates = sorted(dates)
@@ -62,7 +62,7 @@ def createRace():
                 # print(top_date[:20])
                 for t in top_date[:20]:
                     countries_present.add(t["code"])
-            print(m, "ESP" in countries_present)
+            # print(m, "ESP" in countries_present)
             # if "ITA" in countries_present:
             #     print("ITA")
             output = []
@@ -101,6 +101,8 @@ def createRace():
             else:
                 multipliedOutput = output
             directory = PATH+"race"
+            if continent:
+                directory += "-continent"
             if not os.path.exists(directory):
                 os.makedirs(directory)
             with open(directory+"/"+m+".json", "w") as f:

@@ -127,7 +127,7 @@ def retrieveRawData():
 
 def getDates():
     edate = date.today()
-    sdate = date(2020, 3, 10)
+    sdate = date(2020, 3, 30)
     delta = edate - sdate
 
     for i in range(delta.days + 1):
@@ -181,8 +181,6 @@ def scanDailyFolder():
         "area": "2018"
     })
 
-    # for key, value in mapCountries:
-    #     print(value["country_fr"])
     used = set()
     output = []
     newMap = {}
@@ -230,7 +228,6 @@ def scanDailyFolder():
                            "country_en": mapCountryCode[country_code]["country_en"]})
 
     for k, v in lat_lngs.items():
-        print(k, v)
         try:
             v["lat"] = v["lat"] / v["count"]
             v["lng"] = v["lng"] / v["count"]
@@ -254,6 +251,75 @@ def scanDailyFolder():
     with open("./covid19/public/countries.json", "w") as f:
         f.write(json.dumps(mapCountryCode))
 
+    # make the same file but for Continents...
+    continentOutput = []
+    o = {}
+    continentPopArea = {}
+    for row in output:
+        o[row["date"]] = o.get(row["date"], {})
+        o[row["date"]][row["continent_en"]] = o[row["date"]].get(
+            row["continent_en"], {})
+        for key in ["confirmed", "deaths", "recovered"]:
+            o[row["date"]][row["continent_en"]][key] = o[row["date"]
+                                                         ][row["continent_en"]].get(key, 0) + row.get(key, 0)
+
+        for key in ["fr", "en", "es", "de"]:
+            o[row["date"]][row["continent_en"]
+                           ]["continent_"+key] = row["continent_"+key]
+        o[row["date"]][row["continent_en"]]["count"] = o[row["date"]
+                                                         ][row["continent_en"]].get("count", 0) + 1
+        continentPopArea[row["continent_en"]] = continentPopArea.get(
+            row["continent_en"], {"countries": {}})
+        continentPopArea[row["continent_en"]]["countries"][row["code"]] = {
+            "area": row["area"], "pop": row["pop"]}
+        continentPopArea[row["continent_en"]]["lat"] = continentPopArea[row["continent_en"]].get(
+            "lat", 0) + row["lat"]
+        continentPopArea[row["continent_en"]]["lng"] = continentPopArea[row["continent_en"]].get(
+            "lng", 0) + row["lng"]
+        continentPopArea[row["continent_en"]]["count"] = continentPopArea[row["continent_en"]].get(
+            "count", 0) + 1
+
+        for l in ["es", "de", "fr", "en"]:
+            continentPopArea[row["continent_en"]
+                             ]["continent_"+l] = row["continent_"+l]
+    for continent, value in continentPopArea.items():
+        for country, val in value["countries"].items():
+            continentPopArea[continent]["pop"] = continentPopArea[continent].get(
+                "pop", 0) + float(0 if not val.get("pop", 0) else val["pop"])
+            continentPopArea[continent]["area"] = continentPopArea[continent].get(
+                "area", 0) + float(0 if not val.get("area", 0) else val["area"])
+        continentPopArea[continent]["lat"] = continentPopArea[continent]["lat"] / \
+            continentPopArea[continent]["count"]
+        continentPopArea[continent]["lng"] = continentPopArea[continent]["lng"] / \
+            continentPopArea[continent]["count"]
+    output2 = []
+    for date, val in o.items():
+        for continent, val2 in val.items():
+            row = {
+                "confirmed": val2["confirmed"],
+                "deaths": val2["deaths"],
+                "recovered": val2["recovered"],
+                "lat": continentPopArea[continent]["lat"],
+                "lng": continentPopArea[continent]["lng"]
+            }
+            for key in ["fr", "en", "es", "de"]:
+                row["continent_"+key] = val2["continent_"+key]
+            row["date"] = date
+            row["area"] = int(continentPopArea[continent]["area"])
+            row["pop"] = int(continentPopArea[continent]["pop"])
+            row["code"] = continent
+            output2.append(row)
+
+    output = sorted(output2, key=lambda x: x["date"])
+    with open("./covid19/public/data-continent.json", "w") as f:
+        f.write(json.dumps(output))
+    continentsJson = {}
+    for continent, value in continentPopArea.items():
+        continentsJson[continent] = {
+            key: val for key, val in value.items() if key != "countries"}
+    with open("./covid19/public/continents.json", "w") as f:
+        f.write(json.dumps(continentsJson))
+
 
 if __name__ == "__main__":
     getDates()
@@ -261,9 +327,15 @@ if __name__ == "__main__":
     scanDailyFolder()
 
     createVertical()
+    createVertical(delta=True)
+    createVertical(continent=True)
+    createVertical(delta=True, continent=True)
 
     createRace()
+    createRace(continent=True)
 
     createLine()
+    createLine(continent=True)
 
     createBubble()
+    createBubble(continent=True)

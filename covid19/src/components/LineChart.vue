@@ -1,39 +1,47 @@
 <template>
     <v-col>
         <v-row align="center" justify="center" class="mb-3">
-            <div class="title" v-html="sentence"></div>
-            <v-btn v-if="i == n - 1" rounded class="ml-4" outlined @click=";(i = 0), iterate()">
+            <p class="title" v-html="sentence"></p>
+            <v-btn
+                v-if="i == n - 1"
+                rounded
+                :icon="breakpoint == 'xs'"
+                class="ml-4"
+                :outlined="breakpoint != 'xs'"
+                @click=";(i = 0), iterate()"
+            >
                 <v-icon>refresh</v-icon>
-                {{ $t('refresh') }}
+                {{ breakpoint != 'xs' ? $t('refresh') : '' }}
             </v-btn>
         </v-row>
-        <v-row align="center" justify="center">
-            <v-subheader class="title">
-                {{ $t('day') + ' ' + i }}
-                <v-btn icon @click="stopped = !stopped">
-                    <v-icon>{{stopped ?'play_arrow': 'pause'}}</v-icon>
-                </v-btn>
-            </v-subheader>
+        <v-row justify="center">
+            <p class="title">{{ $t('day') + ' ' + i }}</p>
         </v-row>
         <v-slider
             @end="iterate()"
             @mouseup="iterate()"
             :thumb-size="24"
             thumb-label="always"
-            :max="Math.max(n-1, 0)"
+            :max="Math.max(n - 1, 0)"
             :min="0"
             v-model="i"
             :disabled="!stopped && false"
-        ></v-slider>
+        >
+            <template v-slot:append>
+                <v-btn
+                    style="transform: translateY(-5px);"
+                    icon
+                    color="blue"
+                    @click="stopped = !stopped"
+                >
+                    <v-icon>{{ stopped ? 'play_arrow' : 'pause' }}</v-icon>
+                </v-btn>
+            </template>
+        </v-slider>
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
             <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
-            <div
-                id="containerLineChart"
-                :style="
-                    !loading ? `background:#e9e9e9;border-radius:10px;` : ''
-                "
-            ></div>
+            <div id="containerLineChart" :style="!loading ? style : ''"></div>
             <v-spacer></v-spacer>
         </v-row>
     </v-col>
@@ -41,6 +49,7 @@
 
 <script>
 import countries from '@/../public/countries.json'
+import continents from '@/../public/continents.json'
 import * as d3 from 'd3'
 import * as d3Scale from 'd3-scale-chromatic'
 import * as d3Legend from 'd3-svg-legend'
@@ -63,6 +72,14 @@ export default {
         },
         top: {
             type: Number,
+            required: true,
+        },
+        continent: {
+            type: Boolean,
+            required: true,
+        },
+        remove: {
+            type: Boolean,
             required: true,
         },
         measures: {
@@ -88,6 +105,7 @@ export default {
             range: 0,
         },
         countryMap: countries,
+        continentMap: continents,
         xScale: null,
         yScale: null,
         xAxis: null,
@@ -98,18 +116,24 @@ export default {
         locales,
         labels: null,
         logger: [],
+        ticker: null,
     }),
     computed: {
         n() {
             return this.rawData.range
         },
         sentence() {
-            return this.$t('line_sentence').replace(
-                '[x]',
-                `<span style="color:${this.textColor}">${this.$t(
-                    this.measure
-                ).toLowerCase()}</span>`
-            )
+            return this.$t('line_sentence')
+                .replace(
+                    /\[c\]/g,
+                    this.$t(this.continent ? 'continent' : 'country')
+                )
+                .replace(
+                    '[x]',
+                    `<span style="color:${this.textColor}">${this.$t(
+                        this.measure
+                    ).toLowerCase()}</span>`
+                )
         },
         codes() {
             return new Set(this.data.map(d => d.code))
@@ -151,7 +175,12 @@ export default {
         },
         countryNames() {
             return Array.from(this.codes).reduce((p, c) => {
-                p[c] = this.countryMap[c]['country_' + this.lang]
+                if (this.continent) {
+                    p[c] = this.continentMap[c]['continent_' + this.lang]
+                } else {
+                    p[c] = this.countryMap[c]['country_' + this.lang]
+                }
+
                 return p
             }, {})
         },
@@ -163,7 +192,7 @@ export default {
             let r = []
             let country = undefined
             let color = undefined
-            let count = 0
+            let max = 0
             for (let row of this.data) {
                 if (row.code != country) {
                     if (country != undefined) {
@@ -174,16 +203,28 @@ export default {
                         : this.countryColor[row.code]
                     country = row.code
                     r = []
-                    count = 0
+                    max = 0
                 }
-                if (count <= this.i)
-                    r.push({
-                        ...row,
-                        value: this.log ? row.value + 1 : row.value,
-                        lastValue: this.log ? row.lastValue + 1 : row.lastValue,
-                        color,
-                    })
-                count += 1
+                if (max <= this.i) {
+                    if (max < this.i || this.stopped || this.i == this.n - 1) {
+                        r.push({
+                            ...row,
+                            value: this.log ? row.value + 1 : row.value,
+                            lastValue: this.log ? row.value + 1 : row.value,
+                            color,
+                        })
+                    } else if (max == this.i) {
+                        r.push({
+                            ...row,
+                            value: this.log ? row.value + 1 : row.value,
+                            lastValue: this.log
+                                ? row.lastValue + 1
+                                : row.lastValue,
+                            color,
+                        })
+                    }
+                }
+                max += 1
             }
             if (r.length > 0) output.push(r)
 
@@ -225,16 +266,16 @@ export default {
         },
         getData() {
             if (!this.getting) {
-                if (!this.stopped) {
-                    this.i = 0
-                    this.rawData = { data: [], range: 0 }
-                }
                 this.getting = true
                 this.loading = true
 
                 const d = format(new Date(), 'd-M-Y')
                 d3.selectAll('svg').remove()
-                return fetch(`/line/${this.measure}.json?d=${d}`)
+                return fetch(
+                    `/line${this.continent ? '-continent' : ''}/${
+                        this.measure
+                    }.json?d=${d}`
+                )
                     .then(resp => resp.json())
                     .then(res => {
                         this.rawData = res
@@ -251,7 +292,7 @@ export default {
             }
         },
         mount() {
-            this.width = Math.min(window.innerWidth, 1000)
+            this.width = Math.min(window.innerWidth - 110, 1000)
             this.height = Math.min(this.width, this.height)
             this.xScale = d3
                 .scaleLinear()
@@ -305,7 +346,7 @@ export default {
                 .attr('class', 'yAxis axis')
                 .call(this.yAxis)
 
-            for (let [country, color, data] of this.dataset) {
+            for (let [country, color, data, lastValue] of this.dataset) {
                 this.svg
                     .append('path')
                     .datum(data) // 10. Binds data to the line
@@ -314,6 +355,21 @@ export default {
                     .attr('stroke', color)
                     .attr('stroke-width', '3')
                     .attr('d', this.line)
+
+                this.svg
+                    .append('circle')
+                    .datum(lastValue)
+                    .attr('class', 'circle circle' + country)
+                    .attr(
+                        'cy',
+                        this.yScale(lastValue.value ? lastValue.value : 0)
+                    )
+                    .attr('cx', this.xScale(data.length - 1))
+                    .attr('fill', color)
+                    .style('stroke', color)
+                    .attr('r', '8')
+                    .style('stroke-opacity', 0)
+                    .style('fill-opacity', 0)
             }
             this.div = d3
                 .select('#containerLineChart')
@@ -323,25 +379,29 @@ export default {
             let ctx = this
 
             ctx.svg
+                .selectAll('circle')
+                .on('mouseover', d => {
+                    const s = ctx.makeHtml(d.code)
+                    ctx.div
+                        .transition()
+                        .duration(100)
+                        .style('opacity', 1)
+                    ctx.div
+                        .html(s)
+                        .style('left', d3.event.pageX + 30 + 'px')
+                        .style('top', d3.event.pageY - 100 + 'px')
+                })
+                .on('mouseout', () => {
+                    ctx.div
+                        .transition()
+                        .duration(500)
+                        .style('opacity', 0)
+                })
+
+            ctx.svg
                 .selectAll('path')
                 .on('mouseover', d => {
-                    const start = d[0]
-                    const end = d[d.length - 1]
-                    // s += arr.reverse().join('')
-                    let s = `<div>
-                    <div><div style="height:10px;width:10px;border-radius:50%;background:${
-                        start.color
-                    }"></div><b>${
-                        ctx.countryNames[start.code]
-                    }</b></div><br><span>${ctx.$t(
-                        'started'
-                    )}</span> : <b>${ctx.formatDate(
-                        start.date
-                    )}</b><br><span>${ctx.$t(ctx.measure)} ${ctx.$t(
-                        'on'
-                    )} ${ctx.formatDate(end.date)}</span> : <b>${Math.round(
-                        end.value
-                    )} </b></div>`
+                    const s = ctx.makeHtml(d[0].code)
                     ctx.div
                         .transition()
                         .duration(100)
@@ -412,58 +472,91 @@ export default {
                 this.iterate()
             }
         },
+        makeHtml(code) {
+            const d = this.dataset.find(d => d[0] == code)
+            if (d) {
+                const [code, color, data, lastValue] = d
+                const start = data[0]
+                return `<div>
+                <div><div style="height:10px;width:10px;border-radius:50%;background:${color}"></div><b>${
+                    this.countryNames[code]
+                }</b></div><br><span>${this.$t(
+                    'started'
+                )}</span> : <b>${this.formatDate(
+                    start.date
+                )}</b><br><span>${this.$t(this.measure)} ${this.$t(
+                    'on'
+                )} ${this.formatDate(lastValue.date)}</span> : <b>${Math.round(
+                    lastValue.value
+                )} </b></div>`
+            }
+            return ''
+        },
         iterate() {
             let ctx = this
-            let ticker = d3.interval(() => {
-                ctx.xScale.domain([0, ctx.i])
-                ctx.yScale.domain([ctx.min, ctx.max])
-                ctx.line = d3
-                    .line()
-                    .x((d, i) => this.xScale(i)) // set the x values for the line generator
-                    .y(d => this.yScale(d.value)) // set the y values for the line generator
-                    .curve(d3.curveBasis)
-                ctx.svg
-                    .select('.xAxis')
-                    .transition()
-                    .duration(ctx.duration * 2)
-                    .ease(easeLinear)
-                    .call(ctx.xAxis)
-
-                ctx.svg
-                    .select('.yAxis')
-                    .transition()
-                    .duration(ctx.duration * 2)
-                    .ease(easeLinear)
-                    .call(ctx.yAxis)
-
-                for (let [country, color, data] of ctx.dataset) {
-                    let line = ctx.svg.selectAll('.' + country).datum(data)
-                    line.enter()
-                        .append('path')
-                        .attr('class', 'line ' + country) // Assign a class for styling
-                        .attr('fill', 'none')
-                        .attr('stroke', color)
-                        .attr('stroke-width', '3')
-                        .attr('d', ctx.line)
-                        .merge(line)
+            if (!this.ticker) {
+                this.ticker = d3.interval(() => {
+                    ctx.xScale.domain([0, ctx.i])
+                    ctx.yScale.domain([ctx.min, ctx.max])
+                    ctx.line = d3
+                        .line()
+                        .x((d, i) => this.xScale(i)) // set the x values for the line generator
+                        .y(d => this.yScale(d.value)) // set the y values for the line generator
+                        .curve(d3.curveBasis)
+                    ctx.svg
+                        .select('.xAxis')
                         .transition()
-                        .duration(ctx.duration * 0.9)
-                        .attrTween('d', function(d) {
-                            var previous = d3.select(this).attr('d')
-                            var current = ctx.line(d)
-                            return interpolatePath(previous, current)
-                        })
-                }
+                        .duration(ctx.duration * 2)
+                        .ease(easeLinear)
+                        .call(ctx.xAxis)
 
-                ctx.countryLabels() // animate country labels
-                ctx.countryValues() // animate values for countries
-                ctx.legendValues()
-                if (ctx.i == ctx.n || ctx.stopped) {
-                    ticker.stop()
-                } else {
-                    ctx.i += 1
-                }
-            }, this.duration)
+                    ctx.svg
+                        .select('.yAxis')
+                        .transition()
+                        .duration(ctx.duration * 2)
+                        .ease(easeLinear)
+                        .call(ctx.yAxis)
+
+                    for (let [country, color, data, lastValue] of ctx.dataset) {
+                        let line = ctx.svg.selectAll('.' + country).datum(data)
+                        line.enter()
+                            .append('path')
+                            .attr('class', 'line ' + country) // Assign a class for styling
+                            .attr('fill', 'none')
+                            .attr('stroke', color)
+                            .attr('stroke-width', '3')
+                            .attr('d', ctx.line)
+                            .merge(line)
+                            .transition()
+                            .duration(ctx.duration * 0.9)
+                            .attrTween('d', function(d) {
+                                var previous = d3.select(this).attr('d')
+                                var current = ctx.line(d)
+                                return interpolatePath(previous, current)
+                            })
+
+                        let circle = ctx.svg.selectAll('.circle' + country)
+                        circle
+                            .transition()
+                            .duration(ctx.duration * 0.9)
+                            .attr('fill', color)
+                            .attr('cx', ctx.xScale(data.length - 1))
+                            .attr('cy', ctx.yScale(lastValue.value))
+                            .style('fill-opacity', 0.7)
+                            .style('stroke-opacity', 1)
+                    }
+
+                    ctx.countryLabels() // animate country labels
+                    ctx.countryValues() // animate values for countries
+                    ctx.legendValues()
+                    if (ctx.i == ctx.n || ctx.stopped) {
+                        ctx.ticker.stop()
+                        ctx.ticker = null
+                    } else {
+                        ctx.i += 1
+                    }
+                }, this.duration)
+            }
         },
         legendValues() {
             this.colorScale = d3.scaleOrdinal(this.orderedColors)
@@ -503,7 +596,7 @@ export default {
                     'y',
                     d =>
                         this.yScale(d[3].value) +
-                        5 +
+                        10 +
                         (this.yScale(1) - this.yScale(0)) / 2 +
                         1
                 )
@@ -518,15 +611,13 @@ export default {
                 })
                 .attr('y', d => {
                     let v = this.yScale(d[3].value)
-                    // console.log(d[3].value, v)
-                    // this.logger.push(v)
-                    return v + 5
+                    return v - 10
                 })
                 // .attr('y', this.yScale(1))
                 // .html(d => d[3].value)
                 .tween('text', function(d) {
                     let val = d[3]
-                    let i = d3.interpolateRound(val.value, val.value)
+                    let i = d3.interpolateRound(val.lastValue, val.value)
                     return function(t) {
                         this.textContent = d3.format(',')(i(t))
                     }
@@ -538,7 +629,7 @@ export default {
                 .duration(this.duration)
                 .ease(easeLinear)
                 .attr('x', d => this.xScale(d[3].i) + 5)
-                .attr('y', () => this.yScale(this.min - 1) + 5)
+                .attr('y', () => this.yScale(this.min - 1) - 10)
                 .remove()
         },
         countryLabels() {
@@ -556,14 +647,14 @@ export default {
                 .transition()
                 .duration(this.duration)
                 .ease(easeLinear)
-                .attr('y', d => this.yScale(d[3].value) + 5)
+                .attr('y', d => this.yScale(d[3].value) - 10)
 
             labels
                 .transition()
                 .duration(this.duration)
                 .ease(easeLinear)
                 .attr('x', d => this.xScale(d[3].i) - 8)
-                .attr('y', d => this.yScale(d[3].value) + 5)
+                .attr('y', d => this.yScale(d[3].value) - 10)
 
             labels
                 .exit()
@@ -571,7 +662,7 @@ export default {
                 .duration(this.duration)
                 .ease(easeLinear)
                 .attr('x', d => this.xScale(d[3].i) - 8)
-                .attr('y', () => this.yScale(this.min + 1) + 5)
+                .attr('y', () => this.yScale(this.min + 1) - 10)
                 .remove()
         },
         pathTween(d1, precision) {
@@ -627,6 +718,9 @@ export default {
         this.getData()
     },
     watch: {
+        remove() {
+            d3.selectAll('svg').remove()
+        },
         inv_duration(v) {
             this.duration = 1000 - v
         },
@@ -642,6 +736,9 @@ export default {
             this.getData()
         },
         top() {
+            this.getData()
+        },
+        continent() {
             this.getData()
         },
         log(val) {

@@ -21,13 +21,19 @@
     "refresh": "Otra vez",
     "race": "Trayectoria",
     "top": "Top",
-    "countries": "Paises",
+    "countries": "Países",
+    "continent": "continente",
+    "continents": "continentes",
+    "country": "país",
+    "by": "Por",
     "vertical_desc": "Este gráfico muestra los [z] [x] día por día",
     "started": "excedió 10 muertos el",
     "on": "el",
     "day": "Día",
-    "most": "países con más de",
+    "cumulated": "Acumulativo",
+    "not_cumulated": "No acumulativo",
+    "most": "[c] con más de",
     "volunteer": "En apoyo de todos los voluntarios del planeta.",
-    "map": "Mapa de la [x] por países",
-    "line_sentence": "Este gráfico es la evolución de los [x] para cada país llevado a la fecha en que el país vio su <b>décima muerte</b>"
+    "map": "Mapa de la [x] por [c]",
+    "line_sentence": "Este gráfico es la evolución de los [x] para cada [c] llevado a la fecha en que el [c] vio su <b>décima muerte</b>"
 }

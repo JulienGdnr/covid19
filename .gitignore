@@ -9,6 +9,13 @@ daily
 line
 race
 vertical
+vertical-delta
+vertical-continent
+vertical-delta-continent
+race-continent
+line-continent
+bubble-continent.json
+bubble.json
 # Log files
 npm-debug.log*
 yarn-debug.log*

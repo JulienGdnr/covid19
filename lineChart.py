@@ -37,20 +37,18 @@ def getMeasure(row, m):
         return (int(row.get(arr[0], 0) - row.get(arr[1], 0) - row.get(arr[2], 0))) / float(row[arr[-1]])
 
 
-def createLine():
-    start_dates = {}
-    with open(PATH+"race/deaths.json") as f:
+def createLine(continent=False):
+    start_dates = {"CHN": 20200122} if not continent else {"Asia": 20200122}
+    with open(PATH+("race/deaths.json" if not continent else "race-continent/deaths.json")) as f:
         data = json.loads(f.read())
         dates = data["dates"]
         data = data["data"]
         for el in data:
             if el["value"] >= 10 and el["lastValue"] <= 10:
                 start_dates[el["code"]] = int(el["date"].replace("-", ""))
-                if el["code"] == "USA":
-                    print(el["code"], el["value"], el["lastValue"])
     for fle in onlyfiles:
         output = []
-        with open(PATH+"race/"+fle) as f:
+        with open(PATH+("race/"+fle if not continent else "race-continent/"+fle)) as f:
             data = json.loads(f.read())
         data = data["data"]
         code = None
@@ -71,6 +69,8 @@ def createLine():
             except:
                 pass
         directory = PATH+"line"
+        if continent:
+            directory += "-continent"
         if not os.path.exists(directory):
             os.makedirs(directory)
         with open(directory+"/"+fle, "w") as f:

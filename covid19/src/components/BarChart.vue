@@ -1,19 +1,12 @@
 <template>
     <v-col>
         <v-row justify="center">
-            <v-subheader
-                :class="breakpoint == 'xs' ? 'pa-0 ma-0' : 'title'"
-                v-html="vertical_description"
-            ></v-subheader>
+            <p :class="(breakpoint == 'xs' ? 'pa-0 ma-0' : '')+' title'" v-html="sentence"></p>
         </v-row>
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
             <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
-            <div
-                id="container"
-                style="background:#e9e9e9;border-radius:10px"
-                v-if="data.length > 0"
-            ></div>
+            <div id="container" :style="!loading ? style : ''" v-if="data.length > 0"></div>
             <v-spacer></v-spacer>
         </v-row>
     </v-col>
@@ -49,6 +42,18 @@ export default {
         },
         choice: {
             type: String,
+            required: true,
+        },
+        delta: {
+            type: Boolean,
+            required: true,
+        },
+        remove: {
+            type: Boolean,
+            required: true,
+        },
+        continent: {
+            type: Boolean,
             required: true,
         },
         measures: {
@@ -91,18 +96,6 @@ export default {
         },
         locales,
         loading: false,
-        has_color: {
-            CHN: '#DE2910',
-            FRA: '#0055A4',
-            ITA: '#008C45',
-            ESP: '#F1BF00',
-            USA: '#3C3B6E',
-            NLD: 'orange',
-            IRN: '#C8102E',
-            GBR: '#00247D',
-            DEU: '#000000',
-            others: 'grey',
-        },
         getting: false,
     }),
     methods: {
@@ -122,7 +115,9 @@ export default {
                 const d = format(new Date(), 'd-M-Y')
                 d3.selectAll('svg').remove()
                 return fetch(
-                    `/vertical/${this.measure}/${this.top}.json?d=${d}`
+                    `/vertical${this.delta ? '-delta' : ''}${
+                        this.continent ? '-continent' : ''
+                    }/${this.measure}/${this.top}.json?d=${d}`
                 )
                     .then(resp => resp.json())
                     .then(res => {
@@ -142,7 +137,7 @@ export default {
             }
         },
         mount() {
-            this.w = Math.min(window.innerWidth, 1000)
+            this.w = Math.min(window.innerWidth - 20, 1000)
             this.h = Math.min(0.5 * this.w, this.h)
             if (this.svg) d3.selectAll('svg').remove()
             clearTimeout(this.tmt)
@@ -257,9 +252,9 @@ export default {
                         .attr('y', function(d) {
                             return ctx.y(d[1])
                         })
-                        .attr('height', function(d) {
-                            return ctx.y(d[0]) - ctx.y(d[1])
-                        })
+                        .attr('height', d =>
+                            Math.max(0, ctx.y(d[0]) - ctx.y(d[1]))
+                        )
 
                     ctx.svg
                         .selectAll('rect')
@@ -377,7 +372,10 @@ export default {
                 })
                 .attr('height', function(d) {
                     var total = d3.sum(d3.values(d.data))
-                    return ctx.y(d[0] / total) - ctx.y(d[1] / total)
+                    return Math.max(
+                        0,
+                        ctx.y(d[0] / total) - ctx.y(d[1] / total)
+                    )
                 })
                 .transition()
                 .attr('x', function(d, i) {
@@ -407,9 +405,7 @@ export default {
                 .attr('y', function(d) {
                     return ctx.y(d[1])
                 })
-                .attr('height', function(d) {
-                    return ctx.y(d[0]) - ctx.y(d[1])
-                })
+                .attr('height', d => Math.max(0, ctx.y(d[0]) - ctx.y(d[1])))
                 .transition()
                 .attr('x', function(d, i) {
                     return ctx.x(i)
@@ -437,7 +433,7 @@ export default {
         },
     },
     computed: {
-        vertical_description() {
+        sentence() {
             return this.$t('vertical_desc')
                 .replace(
                     '[x]',
@@ -446,14 +442,22 @@ export default {
                     ).toLowerCase()}&nbsp;</b>`
                 )
                 .replace('[y]', this.$t('countries'))
-                .replace('[z]', this.top + ' ' + this.$t('most').toLowerCase())
+                .replace(
+                    '[z]',
+                    (!this.continent ? this.top + ' ' : '') +
+                        this.$t('most').toLowerCase()
+                )
+                .replace(
+                    '[c]',
+                    this.$t(this.continent ? 'continents' : 'countries')
+                )
         },
         margin() {
             return {
                 top: this.breakpoint == 'xs' ? 10 : 40,
                 right: this.lang == 'es' ? 160 : 110,
                 bottom: 40,
-                left: 35,
+                left: 55,
             }
         },
 
@@ -487,9 +491,18 @@ export default {
         },
         countryNames() {
             let o = {}
-            for (let key in this.countryMap) {
-                if (!o[key])
-                    o[key] = this.countryMap[key]['country_' + this.lang]
+            if (this.continent) {
+                for (let key in this.continentMap) {
+                    if (!o[key])
+                        o[key] = this.continentMap[key][
+                            'continent_' + this.lang
+                        ]
+                }
+            } else {
+                for (let key in this.countryMap) {
+                    if (!o[key])
+                        o[key] = this.countryMap[key]['country_' + this.lang]
+                }
             }
             o['others'] = this.i18n.others[this.lang]
             return o
@@ -541,6 +554,12 @@ export default {
         },
     },
     watch: {
+        remove() {
+            d3.selectAll('svg').remove()
+        },
+        delta() {
+            this.getData()
+        },
         measure() {
             this.getData()
         },
@@ -552,6 +571,9 @@ export default {
         },
         choice() {
             this.change()
+        },
+        continent() {
+            this.getData()
         },
     },
     mounted() {

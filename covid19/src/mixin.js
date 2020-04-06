@@ -10,11 +10,18 @@ export default {
             IRN: '#C8102E',
             GBR: '#00247D',
             DEU: '#000000',
+            Europe: '#003399',
+            Asia: '#FFCC01',
+            America: '#00963F',
+            Africa: 'orange',
+            Oceania: 'red',
             others: 'grey',
         },
+        style:
+            'background:#ECEFF1;border-radius:10px;margin-left:5px;margin-right:5px;',
     }),
-    computed: {
-        textColor() {
+    methods: {
+        getTextColor(c) {
             return {
                 confirmed_deaths_recovered: 'orange',
                 confirmed: 'blue',
@@ -28,7 +35,15 @@ export default {
                 recovered_area: 'green',
                 confirmed_deaths_recovered_area: 'orange',
                 confirmed_deaths_recovered_pop: 'orange',
-            }[this.measure]
+            }[c]
+        },
+    },
+    computed: {
+        breakpoint() {
+            return this.$vuetify.breakpoint.name
+        },
+        textColor() {
+            return this.getTextColor(this.measure)
         },
     },
 }

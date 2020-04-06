@@ -1,37 +1,39 @@
 <template>
     <v-col>
         <v-row align="center" justify="center" class="mb-3">
-            <div class="title" v-html="sentence"></div>
+            <p class="title" v-html="sentence"></p>
             <v-btn
                 v-if="i == dates.length - 1"
                 rounded
+                :icon="breakpoint == 'xs'"
                 class="ml-4"
-                outlined
+                :outlined="breakpoint != 'xs'"
                 @click=";(i = 0), iterate()"
             >
                 <v-icon>refresh</v-icon>
-                {{ $t('refresh') }}
+                {{ breakpoint != 'xs' ? $t('refresh') : '' }}
             </v-btn>
         </v-row>
         <v-row align="center" justify="center">
-            <v-subheader class="title">
-                {{ formatDate(date) }}
-                <v-btn icon @click="stopped = !stopped">
-                    <v-icon>{{stopped ?'play_arrow': 'pause'}}</v-icon>
-                </v-btn>
-            </v-subheader>
+            <v-subheader class="title">{{ formatDate(date) }}</v-subheader>
         </v-row>
-        <v-slider @end="iterate()" :max="dates.length" :min="0" v-model="i" :disabled="!stopped"></v-slider>
+        <v-slider @end="iterate()" :max="dates.length" :min="0" v-model="i" :disabled="!stopped">
+            <template v-slot:append>
+                <v-btn
+                    style="transform: translateY(-5px);"
+                    icon
+                    color="blue"
+                    @click="stopped = !stopped"
+                >
+                    <v-icon>{{ stopped ? 'play_arrow' : 'pause' }}</v-icon>
+                </v-btn>
+            </template>
+        </v-slider>
 
         <v-row align="center" justify="center">
             <v-spacer></v-spacer>
             <v-progress-circular indeterminate size="50" color="primary" v-if="loading"></v-progress-circular>
-            <div
-                id="containerMapChart"
-                :style="
-                    !loading ? `background:#e9e9e9;border-radius:10px;` : ''
-                "
-            ></div>
+            <div id="containerMapChart" :style="!loading ? style : ''"></div>
 
             <v-spacer></v-spacer>
         </v-row>
@@ -62,6 +64,10 @@ export default {
         },
         lang: {
             type: String,
+            required: true,
+        },
+        remove: {
+            type: Boolean,
             required: true,
         },
     },
@@ -96,6 +102,7 @@ export default {
         locales,
         latlng,
         countryMap: countries,
+        ticker: null,
     }),
     methods: {
         zoomed() {
@@ -184,22 +191,22 @@ export default {
                     .data(data.features)
                     .enter()
                     .append('path')
-                    .attr('fill', '#69b3a2')
+                    .attr('fill', 'red')
                     .attr('d', this.path)
                     .style('stroke', '#fff')
                     .call(this.drag)
 
-                this.svg
-                    .selectAll('circle')
-                    .data(this.dataset)
-                    .enter()
-                    .append('circle')
-                    .attr('cx', d => this.projection([d.lng, d.lat])[0])
-                    .attr('cy', d => this.projection([d.lng, d.lat])[1])
-                    .attr('r', '1px')
-                    .attr('fill-opacity', '50%')
-                    .attr('fill', this.textColor)
-                    .call(this.drag)
+                // this.svg
+                //     .selectAll('circle')
+                //     .data(this.dataset)
+                //     .enter()
+                //     .append('circle')
+                //     .attr('cx', d => this.projection([d.lng, d.lat])[0])
+                //     .attr('cy', d => this.projection([d.lng, d.lat])[1])
+                //     .attr('r', '1px')
+                //     .attr('fill-opacity', '50%')
+                //     .attr('fill', this.textColor)
+                //     .call(this.drag)
 
                 // this.zoom = d3
                 //     .zoom()
@@ -260,46 +267,49 @@ export default {
         },
         iterate() {
             let ctx = this
-            let ticker = d3.interval(() => {
-                d3.selectAll('circle')
-                    .data(ctx.dataset)
-                    .attr('cx', d => ctx.projection([d.lng, d.lat])[0])
-                    .attr('cy', d => ctx.projection([d.lng, d.lat])[1])
+            if (!this.ticker) {
+                this.ticker = d3.interval(() => {
+                    d3.selectAll('circle')
+                        .data(ctx.dataset)
+                        .attr('cx', d => ctx.projection([d.lng, d.lat])[0])
+                        .attr('cy', d => ctx.projection([d.lng, d.lat])[1])
 
-                d3.selectAll('circle')
-                    .transition()
-                    .duration(ctx.duration)
-                    .ease(easeLinear)
-                    .attr(
-                        'r',
-                        d => Math.round((d.value / ctx.bigMax) * 100) + 'px'
-                    )
-                    .attr('fill', d => {
-                        const coordinate = [Number(d.lng), Number(d.lat)]
-                        const t = d3.geoDistance(
-                            coordinate,
-                            ctx.projection.invert(ctx.center)
+                    d3.selectAll('circle')
+                        .transition()
+                        .duration(ctx.duration)
+                        .ease(easeLinear)
+                        .attr(
+                            'r',
+                            d => Math.round((d.value / ctx.bigMax) * 100) + 'px'
                         )
-                        return t > 1.57 ? 'none' : this.textColor
-                    })
+                        .attr('fill', d => {
+                            const coordinate = [Number(d.lng), Number(d.lat)]
+                            const t = d3.geoDistance(
+                                coordinate,
+                                ctx.projection.invert(ctx.center)
+                            )
+                            return t > 1.57 ? 'none' : this.textColor
+                        })
 
-                d3.selectAll('circle')
-                    .exit()
-                    .transition()
-                    .duration(ctx.duration)
-                    .ease(easeLinear)
-                    .attr('r', '0')
-                    .remove()
+                    d3.selectAll('circle')
+                        .exit()
+                        .transition()
+                        .duration(ctx.duration)
+                        .ease(easeLinear)
+                        .attr('r', '0')
+                        .remove()
 
-                if (
-                    ctx.date == ctx.dates[ctx.dates.length - 1] ||
-                    ctx.stopped
-                ) {
-                    ticker.stop()
-                } else {
-                    ctx.i += 1
-                }
-            }, ctx.duration)
+                    if (
+                        ctx.date == ctx.dates[ctx.dates.length - 1] ||
+                        ctx.stopped
+                    ) {
+                        ctx.ticker.stop()
+                        ctx.ticker = null
+                    } else {
+                        ctx.i += 1
+                    }
+                }, ctx.duration)
+            }
         },
         getData() {
             if (!this.getting) {
@@ -387,6 +397,9 @@ export default {
         },
     },
     watch: {
+        remove() {
+            d3.selectAll('svg').remove()
+        },
         stopped(val) {
             if (!val) {
                 this.iterate()

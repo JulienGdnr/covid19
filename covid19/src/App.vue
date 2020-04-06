@@ -20,28 +20,47 @@
                     <v-icon>mdi-chevron-right</v-icon>
                 </v-btn>
             </v-card-actions>
-            <v-row :justify="breakpoint == 'xs' ? '' : 'space-around'">
-                <v-col :cols="breakpoint == 'xs' ? '' : '2'">
+            <v-row
+                :justify="breakpoint == 'xs' ? '' : 'space-around'"
+                :class="breakpoint == 'xs' ? 'mt-3 mx-1' : ''"
+            >
+                <v-col
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                    :class="breakpoint == 'xs' ? 'pa-1' : ''"
+                >
                     <v-select
                         outlined
                         dense
-                        :label="$t('choose') + ' ' + $t('measure')"
+                        :label="
+                            $t('choose') +
+                            ' ' +
+                            $t('measure') +
+                            (mode == 'bubble' ? ' X' : '')
+                        "
                         width="100"
                         :items="measures"
                         v-model="measure"
                     ></v-select>
                 </v-col>
-                <v-col :cols="breakpoint == 'xs' ? '' : '2'">
+                <v-col
+                    v-if="mode == 'bubble'"
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                    :class="breakpoint == 'xs' ? 'pa-1' : ''"
+                >
                     <v-select
                         outlined
                         dense
-                        :label="$t('choose') + ' ' + $t('lang')"
+                        :label="$t('choose') + ' ' + $t('measure') + ' Y'"
                         width="100"
-                        :items="langs"
-                        v-model="lang"
+                        :items="measures"
+                        v-model="measure2"
                     ></v-select>
                 </v-col>
-                <v-col v-if="mode == 'map'" :cols="breakpoint == 'xs' ? '' : '2'">
+                <v-col
+                    v-if="mode == 'map'"
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                    :class="breakpoint == 'xs' ? 'pa-1' : ''"
+                >
                     <v-select
                         outlined
                         dense
@@ -51,8 +70,52 @@
                         v-model="projection"
                     ></v-select>
                 </v-col>
-                <v-col v-if="mode != 'line' && mode != 'map'" :cols="breakpoint == 'xs' ? '' : '2'">
+                <!-- <v-col
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                    :class="breakpoint == 'xs' ? 'pa-1' : ''"
+                    v-if="mode != 'bar'"
+                >
+                    <v-radio-group class="mt-n3" :dense="breakpoint == 'xs'" v-model="log">
+                        <v-radio :value="false" :label="$t('Normal')"></v-radio>
+                        <v-radio :value="true" :label="$t('Logarithmic')"></v-radio>
+                    </v-radio-group>
+                </v-col>-->
+                <v-col
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                    :class="breakpoint == 'xs' ? 'pa-1' : ''"
+                    v-if="mode != 'map'"
+                >
+                    <v-radio-group class="mt-n3" :dense="breakpoint == 'xs'" v-model="continent">
+                        <v-radio :value="false" :label="$t('by')+' '+$t('country')"></v-radio>
+                        <v-radio :value="true" :label="$t('by')+' '+$t('continent')"></v-radio>
+                    </v-radio-group>
+                </v-col>
+                <v-col
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                    :class="breakpoint == 'xs' ? 'pa-1' : ''"
+                    v-if="mode == 'bar'"
+                >
+                    <v-radio-group class="mt-n3" :dense="breakpoint == 'xs'" v-model="cumulated">
+                        <v-radio :value="true" :label="$t('cumulated')"></v-radio>
+                        <v-radio :value="false" :label="$t('not_cumulated')"></v-radio>
+                    </v-radio-group>
+                </v-col>
+                <v-col
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                    :class="breakpoint == 'xs' ? 'pa-1' : ''"
+                    v-if="mode == 'bar'"
+                >
+                    <v-radio-group class="mt-n3" :dense="breakpoint == 'xs'" v-model="choice">
+                        <v-radio v-for="c in choices" :key="c" :value="c" :label="$t(c)"></v-radio>
+                    </v-radio-group>
+                </v-col>
+                <v-col
+                    v-if="['race', 'bar'].indexOf(mode) != -1"
+                    :cols="breakpoint == 'xs' ? '' : '2'"
+                    :class="breakpoint == 'xs' ? 'pa-1' : ''"
+                >
                     <v-select
+                        :disabled="continent"
                         outlined
                         dense
                         max-width="50"
@@ -62,69 +125,94 @@
                         v-model="top"
                     ></v-select>
                 </v-col>
-                <!-- <v-col v-if="window == 2" :cols="breakpoint == 'xs' ? '' : '2'">
-                    <v-switch inset :label="'Log'" type="number" v-model="log"></v-switch>
-                </v-col>-->
-                <v-col :cols="breakpoint == 'xs' ? '' : '2'" v-if="mode == 'bar'">
-                    <v-radio-group class="mt-n3" :dense="breakpoint == 'xs'" v-model="choice">
-                        <v-radio v-for="c in choices" :key="c" :value="c" :label="$t(c)"></v-radio>
-                    </v-radio-group>
-                </v-col>
             </v-row>
             <race-chart
                 :top="top"
                 :lang="lang"
                 :measures="measures"
                 :measure="measure"
-                v-if="mode == 'race' && !moving"
+                :continent="continent"
+                v-if="mode == 'race'"
+                :remove="remove"
             />
             <bar-chart
+                :delta="delta"
+                :continent="continent"
                 :top="top"
                 :lang="lang"
                 :choice="choice"
                 :measures="measures"
                 :measure="measure"
                 @getData="choice = 'stacked'"
-                v-if="mode == 'bar' && !moving"
+                v-if="mode == 'bar'"
+                :remove="remove"
             />
             <bubble-chart
                 :top="top"
+                :continent="continent"
                 :lang="lang"
                 :measures="measures"
                 :measureX="measure"
                 :measureY="measure2"
                 :log="log"
-                v-if="mode == 'bubble' && !moving"
+                v-if="mode == 'bubble'"
+                :remove="remove"
             />
             <line-chart
                 :top="top"
                 :lang="lang"
+                :continent="continent"
                 :measures="measures"
                 :measure="measure"
                 :log="log"
-                v-if="mode == 'line' && !moving"
+                v-if="mode == 'line'"
+                :remove="remove"
             />
             <map-chart :proj="projection" :measure="measure" :lang="lang" v-if="mode == 'map'" />
         </v-col>
         <v-footer dark padless>
             <v-card light class="flex" flat tile>
-                <v-card-title class="blue-grey lighten-5">
-                    <strong class="subheading">{{ $t('volunteer') }}</strong>
-
-                    <v-spacer></v-spacer>
-
-                    <a
-                        style="text-decoration:none"
-                        v-for="icon in icons"
-                        :key="icon.i"
-                        class="mx-4"
-                        dark
-                        :href="icon.l"
-                        target="_blank"
-                        icon
+                <v-card-title wrap class="blue-grey lighten-5">
+                    <strong
+                        class="subheading"
+                        style="
+                            overflow-wrap: normal;
+                            text-align: left;
+                            word-break: normal;
+                        "
+                    >{{ $t('volunteer') }}</strong>
+                    <v-col
+                        align="center"
+                        justify="center"
+                        class="ma-0 pa-0"
+                        :cols="breakpoint == 'xs' ? '' : '2'"
                     >
-                        <v-icon size="24px">{{ icon.i }}</v-icon>
-                    </a>
+                        <v-select
+                            class="my-0 ml-2 px-0 pt-5"
+                            height="25"
+                            width="50"
+                            outlined
+                            dense
+                            :label="$t('choose') + ' ' + $t('lang')"
+                            :items="langs"
+                            v-model="lang"
+                        ></v-select>
+                    </v-col>
+                    <v-spacer></v-spacer>
+                    <v-row align="end" justify="start">
+                        <a
+                            style="text-decoration: none;"
+                            v-for="icon in icons"
+                            :key="icon.i"
+                            class="mx-4"
+                            dark
+                            :href="icon.l"
+                            target="_blank"
+                            icon
+                        >
+                            <v-icon size="24px">{{ icon.i }}</v-icon>
+                        </a>
+                    </v-row>
                 </v-card-title>
 
                 <v-card-text dark class="py-2 white--text text-center black">
@@ -168,14 +256,19 @@ export default {
         choices: ['stacked', 'percent'],
         measure: 'confirmed_deaths_recovered',
         measure2: 'deaths',
+        cumulated: true,
+        continent: false,
         lang: 'en',
         items,
         window: 0,
-        windows: ['bar_chart', 'bar_chart', 'multiline_chart'],
-        // windows: ['bar_chart', 'bar_chart', 'multiline_chart', 'bubble_chart'],
-        // windows: ['bar_chart', 'bar_chart', 'multiline_chart', 'language'],
+        windows: [
+            'bar_chart',
+            'multiline_chart',
+            'bubble_chart',
+            // 'language',
+            'bar_chart',
+        ],
         log: false,
-        moving: false,
         projection: 'geoOrthographic',
         projections: [
             'geoOrthographic',
@@ -205,13 +298,20 @@ export default {
                 l: 'https://www.instagram.com/vidacolombia/',
             },
         ],
+        baseMeasures: [
+            'confirmed_deaths_recovered',
+            'confirmed',
+            'deaths',
+            'recovered',
+        ],
+        remove: false,
     }),
     computed: {
-        breakpoint() {
-            return this.$vuetify.breakpoint.name
+        delta() {
+            return !this.cumulated
         },
         mode() {
-            return ['race', 'bar', 'line', 'bubble', 'map'][this.window]
+            return ['race', 'line', 'bubble', 'bar'][this.window]
         },
         color() {
             return {
@@ -223,12 +323,13 @@ export default {
         },
         measures() {
             if (this.mode == 'bar') {
-                return [
-                    'confirmed_deaths_recovered',
-                    'confirmed',
-                    'deaths',
-                    'recovered',
-                ].map(value => ({ value, text: this.$t(value) }))
+                return this.baseMeasures
+                    .filter(
+                        m =>
+                            m.indexOf('confirmed_deaths_recovered') == -1 ||
+                            !this.delta
+                    )
+                    .map(value => ({ value, text: this.$t(value) }))
             } else {
                 return [
                     'confirmed_deaths_recovered',
@@ -243,7 +344,13 @@ export default {
                     'confirmed_area',
                     'confirmed_deaths_recovered_pop',
                     'confirmed_deaths_recovered_area',
-                ].map(value => ({ value, text: this.$t(value) }))
+                ]
+                    .filter(
+                        m =>
+                            m.indexOf('confirmed_deaths_recovered') == -1 ||
+                            !this.delta
+                    )
+                    .map(value => ({ value, text: this.$t(value) }))
             }
         },
         measureNames() {
@@ -261,30 +368,75 @@ export default {
     },
     methods: {
         prev() {
-            if (this.window == 0) {
-                this.window = this.windows.length - 1
-            } else {
-                this.window--
-            }
+            this.remove = !this.remove
+            this.$nextTick(() => {
+                if (this.window == 0) {
+                    this.window = this.windows.length - 1
+                } else {
+                    this.window--
+                }
+            }, this)
         },
         next() {
-            if (this.window == this.windows.length - 1) {
-                this.window = 0
-            } else {
-                this.window++
-            }
+            this.remove = !this.remove
+            this.$nextTick(() => {
+                if (this.window == this.windows.length - 1) {
+                    this.window = 0
+                } else {
+                    this.window++
+                }
+            }, this)
         },
     },
     mounted() {
         this.lang = this.$i18n.locale
     },
     watch: {
+        delta(val) {
+            if (
+                val &&
+                this.measure.indexOf('confirmed_deaths_recovered') != -1
+            ) {
+                this.measure = 'confirmed'
+            }
+        },
+        continent(val) {
+            if (val) {
+                this.top = 10
+            }
+        },
         lang(val) {
             this.$i18n.locale = val
         },
-        window(val) {
-            if (
-                val == 1 &&
+        mode(val) {
+            if (val == 'bubble') {
+                if (this.measure == this.measure2) {
+                    // we need to change this.measure2
+                    const sufixes = ['_pop', '_area']
+                    let found = false
+                    sufixes.forEach(_ => {
+                        if (this.measure.indexOf(_) != -1) {
+                            found = true
+                            let start = this.measure.replace(_, '')
+                            for (let i of this.baseMeasures) {
+                                if (i != start) {
+                                    this.measure2 = i + _
+                                    break
+                                }
+                            }
+                        }
+                    })
+                    if (!found) {
+                        for (let i of this.baseMeasures) {
+                            if (i != this.measure) {
+                                this.measure2 = i
+                                break
+                            }
+                        }
+                    }
+                }
+            } else if (
+                val == 'bar' &&
                 [
                     'confirmed_deaths_recovered',
                     'confirmed',
@@ -293,16 +445,6 @@ export default {
                 ].indexOf(this.measure) == -1
             ) {
                 this.measure = 'confirmed_deaths_recovered'
-                this.moving = true
-                setTimeout(
-                    () => {
-                        this.moving = false
-                    },
-                    500,
-                    this
-                )
-            } else if (val == 2) {
-                this.measure = 'deaths'
             }
         },
     },
